@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Balochistan Lottery Management System
 
-## Getting Started
+A mobile-first Next.js (App Router) application that digitizes manual lottery ticket record-keeping —
+customers submit ticket details digitally, and an authorized admin verifies and manages every record from
+a secure dashboard.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, TypeScript, Turbopack) — frontend + backend in one project (API routes under `src/app/api`)
+- **Tailwind CSS 4** — styling
+- **lowdb** (JSON file at `src/data/db.json`) — lightweight embedded database, swappable for Postgres/MySQL later
+- **jose** — signed httpOnly JWT session cookies for admin auth
+- **bcryptjs** — password hashing
+- **zod** — server-side input validation
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo admin login
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- URL: `/admin/login`
+- Username: `admin`
+- Password: `admin123`
 
-## Learn More
+The database seeds itself with sample draws, tickets, and this admin account on first run.
 
-To learn more about Next.js, take a look at the following resources:
+## Key flows
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Customer:** Home → Submit Ticket (4-step form) → Reference ID → Check Ticket Status
+- **Admin:** Login → Dashboard → Tickets (search/filter/sort) → Ticket Details (verify/reject/cancel/edit,
+  duplicate flag, digital receipt) → Reports (CSV export) → Audit Logs → Notifications
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- File uploads (ticket/receipt images) are stored as base64 data URLs inside the JSON store for simplicity —
+  swap for S3/Cloud Storage in production.
+- Rate limiting is in-memory and per-process — replace with a shared store (Redis) for multi-instance deployments.
+- WhatsApp/SMS delivery is stubbed via the Notifications log; connect a provider (Twilio, WhatsApp Cloud API) in
+  `src/app/api/tickets/[id]/route.ts` and `src/app/api/tickets/route.ts` where notifications are created.
