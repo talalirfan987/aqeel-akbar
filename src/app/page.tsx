@@ -1,69 +1,87 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+
+const steps = [
+  { key: "step1" as const, icon: "📝" },
+  { key: "step2" as const, icon: "🎟️" },
+  { key: "step3" as const, icon: "🔑" },
+  { key: "step4" as const, icon: "📊" },
+];
 
 export default function Home() {
+  const { t } = useI18n();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="flex-1">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-blue-50 via-white to-white">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              Digital Record Management Platform
+            </span>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">{t("heroTitle")}</h1>
+            <p className="mt-4 text-base text-slate-600 sm:text-lg">{t("heroSubtitle")}</p>
+
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/submit"
+                className="w-full rounded-xl bg-blue-600 px-6 py-3.5 text-center text-base font-semibold text-white shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto"
+              >
+                {t("submitTicket")}
+              </Link>
+              <Link
+                href="/status"
+                className="w-full rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-center text-base font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 sm:w-auto"
+              >
+                {t("checkStatus")}
+              </Link>
+            </div>
+
+            <p className="mx-auto mt-6 max-w-xl text-xs text-slate-400">{t("disclaimer")}</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+        <h2 className="text-center text-xl font-bold text-slate-900 sm:text-2xl">How it works</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((s, i) => (
+            <div key={s.key} className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-2xl">
+                {s.icon}
+              </div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-blue-600">Step {i + 1}</div>
+              <p className="text-sm font-medium text-slate-700">{t(s.key)}</p>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-14 sm:px-6 sm:grid-cols-3">
+          {[
+            { title: "Secure by design", body: "Server-side validation, secure file uploads, and role-based admin access protect every record." },
+            { title: "Transparent tracking", body: "Every ticket gets a unique reference ID so you can track its verification status at any time." },
+            { title: "Full audit trail", body: "Every admin action — verify, reject, edit, cancel — is logged for accountability." },
+          ].map((c) => (
+            <div key={c.title} className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+              <h3 className="mb-2 text-sm font-bold text-slate-900">{c.title}</h3>
+              <p className="text-sm text-slate-600">{c.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+          <strong className="block mb-1">Important notice</strong>
+          This platform digitizes ticket record-keeping and verification only. It does not conduct draws, guarantee
+          any winning outcome, or make any claim about draw results. Participation may be subject to applicable
+          provincial regulations and age restrictions.
+        </div>
+      </section>
+    </main>
   );
 }
