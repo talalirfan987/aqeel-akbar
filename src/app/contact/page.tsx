@@ -12,13 +12,19 @@ export default function ContactPage() {
         <p className="mt-1 text-sm text-slate-500">Have a question about your submission? Reach out to the operator.</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold uppercase text-slate-400">Support Phone</p>
-            <p className="mt-1 text-sm font-medium text-slate-900">+92 300 0000000</p>
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 text-lg">📞</span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-400">Support Phone</p>
+              <p className="mt-0.5 text-sm font-medium text-slate-900">+92 300 0000000</p>
+            </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold uppercase text-slate-400">Support Email</p>
-            <p className="mt-1 text-sm font-medium text-slate-900">support@blm-system.example</p>
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 text-lg">✉️</span>
+            <div>
+              <p className="text-xs font-semibold uppercase text-slate-400">Support Email</p>
+              <p className="mt-0.5 text-sm font-medium text-slate-900">support@blm-system.example</p>
+            </div>
           </div>
         </div>
 
