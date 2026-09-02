@@ -11,6 +11,10 @@ export default function AdminTicketsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState("newest");
+  const [confirmFor, setConfirmFor] = useState<{ ticket: Ticket; action: "verify" | "cancel" } | null>(null);
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   async function load() {
     setLoading(true);
@@ -29,6 +33,31 @@ export default function AdminTicketsPage() {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, status, sort]);
+
+  function openConfirm(ticket: Ticket, action: "verify" | "cancel") {
+    setConfirmFor({ ticket, action });
+    setNotes("");
+    setActionError("");
+  }
+
+  async function confirmActionSubmit() {
+    if (!confirmFor) return;
+    setBusy(true);
+    setActionError("");
+    const res = await fetch(`/api/tickets/${confirmFor.ticket.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: confirmFor.action, adminNotes: notes }),
+    });
+    const data = await res.json();
+    setBusy(false);
+    if (!res.ok) {
+      setActionError(data.error || "Action failed");
+      return;
+    }
+    setConfirmFor(null);
+    load();
+  }
 
   return (
     <div className="space-y-5">
@@ -125,9 +154,27 @@ export default function AdminTicketsPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-500">{new Date(t.submittedAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/tickets/${t.id}`} className="font-medium text-amber-600 hover:underline">
-                        View
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link href={`/admin/tickets/${t.id}`} className="font-medium text-amber-600 hover:underline">
+                          View
+                        </Link>
+                        {t.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => openConfirm(t, "verify")}
+                              className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 cursor-pointer"
+                            >
+                              Verify
+                            </button>
+                            <button
+                              onClick={() => openConfirm(t, "cancel")}
+                              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:border-red-300 hover:text-red-600 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -135,6 +182,50 @@ export default function AdminTicketsPage() {
           </table>
         </div>
       </div>
+
+      {confirmFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-base font-bold text-slate-900">
+              {confirmFor.action === "verify" ? "Verify this ticket?" : "Cancel this ticket?"}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {confirmFor.ticket.referenceId} — {confirmFor.ticket.customerName}
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              {confirmFor.action === "verify"
+                ? "This will mark the ticket as Verified and generate a digital record."
+                : "This will cancel the ticket. It remains in the system for audit purposes."}
+            </p>
+            <label className="mt-4 block text-xs font-medium text-slate-500">Description (optional)</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Add a note about this action…"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+            {actionError && <p className="mt-2 text-xs font-medium text-red-600">{actionError}</p>}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmFor(null)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmActionSubmit}
+                disabled={busy}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-60 ${
+                  confirmFor.action === "verify" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {busy ? "Processing…" : confirmFor.action === "verify" ? "Verify Ticket" : "Cancel Ticket"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
