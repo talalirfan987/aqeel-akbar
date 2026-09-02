@@ -6,9 +6,9 @@ export type Lang = "en" | "ur" | "roman";
 
 const dict = {
   en: {
-    heroTitle: "Digital Lottery Ticket Management",
+    heroTitle: "Akeel Akbar Lottery Ticket Management",
     heroSubtitle: "Submit, verify, and manage your ticket records securely and easily.",
-    submitTicket: "Submit Ticket",
+    submitTicket: "Get Your Ticket",
     checkStatus: "Check Ticket Status",
     step1: "Enter your information",
     step2: "Submit your ticket",
@@ -17,12 +17,13 @@ const dict = {
     home: "Home",
     about: "About",
     contact: "Contact",
+    winners: "Winners",
     adminLogin: "Admin Login",
     disclaimer:
-      "This platform digitizes ticket record-keeping only. It does not guarantee any winning outcome and makes no claims about draw results.",
+      "Every ticket, verification, and winner is tracked and published openly here — nothing happens behind closed doors. Trust is built through transparency, not promises.",
   },
   ur: {
-    heroTitle: "ڈیجیٹل لاٹری ٹکٹ مینجمنٹ",
+    heroTitle: "عقیل اکبر لاٹری ٹکٹ مینجمنٹ",
     heroSubtitle: "اپنے ٹکٹ ریکارڈ محفوظ اور آسان طریقے سے جمع، تصدیق اور منظم کریں۔",
     submitTicket: "ٹکٹ جمع کروائیں",
     checkStatus: "ٹکٹ کی صورتحال دیکھیں",
@@ -33,11 +34,12 @@ const dict = {
     home: "ہوم",
     about: "ہمارے بارے میں",
     contact: "رابطہ کریں",
+    winners: "فاتحین",
     adminLogin: "ایڈمن لاگ ان",
-    disclaimer: "یہ پلیٹ فارم صرف ٹکٹ ریکارڈ کو ڈیجیٹل بناتا ہے۔ یہ کسی جیت کی ضمانت نہیں دیتا۔",
+    disclaimer: "ہر ٹکٹ، تصدیق اور فاتح یہاں کھلے عام ٹریک اور شائع کیا جاتا ہے — کچھ بھی پردے کے پیچھے نہیں ہوتا۔ اعتماد شفافیت سے بنتا ہے، وعدوں سے نہیں۔",
   },
   roman: {
-    heroTitle: "Digital Lottery Ticket Management",
+    heroTitle: "Akeel Akbar Lottery Ticket Management",
     heroSubtitle: "Apne ticket records ko surakhsit aur asaan tareeqay se submit, verify aur manage karein.",
     submitTicket: "Ticket Submit Karein",
     checkStatus: "Ticket Status Check Karein",
@@ -48,8 +50,9 @@ const dict = {
     home: "Home",
     about: "Hamare Baray Mein",
     contact: "Rabta Karein",
+    winners: "Winners",
     adminLogin: "Admin Login",
-    disclaimer: "Yeh platform sirf ticket record ko digital karta hai. Yeh kisi jeet ki zamanat nahi deta.",
+    disclaimer: "Har ticket, verification aur winner yahan khule taur par track aur publish hota hai — kuch bhi chupaya nahi jata. Bharosa transparency se banta hai, waadon se nahi.",
   },
 } as const;
 
