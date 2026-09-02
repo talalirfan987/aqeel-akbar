@@ -3,20 +3,28 @@ import { JSONFile } from "lowdb/node";
 import path from "path";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
-import type { DbShape, Draw, Ticket, AdminUser } from "./types";
+import type { DbShape, Draw, Ticket, AdminUser, WinnerEntry } from "./types";
 
 const file = path.join(process.cwd(), "src", "data", "db.json");
 const adapter = new JSONFile<DbShape>(file);
 
-const defaultData: DbShape = { draws: [], tickets: [], admins: [], customers: [], auditLogs: [], notifications: [] };
+const defaultData: DbShape = {
+  draws: [],
+  tickets: [],
+  admins: [],
+  customers: [],
+  auditLogs: [],
+  notifications: [],
+  winnerEntries: [],
+  messages: [],
+};
 
 let dbInstance: Low<DbShape> | null = null;
 
 function seed(db: Low<DbShape>) {
   const draws: Draw[] = [
-    { id: "d1", name: "Balochistan Prize Bond Draw #45", drawDate: "2026-09-15", ticketPrice: 2000, active: true },
-    { id: "d2", name: "Balochistan Prize Bond Draw #46", drawDate: "2026-10-15", ticketPrice: 2000, active: true },
-    { id: "d3", name: "National Savings Draw #12", drawDate: "2026-08-15", ticketPrice: 1500, active: false },
+    { id: "d1", name: "Akeel Akbar Prize Bond Draw #45", drawDate: "2026-09-15", ticketPrice: 2000, active: true },
+    { id: "d2", name: "Akeel Akbar Prize Bond Draw #46", drawDate: "2026-10-15", ticketPrice: 2000, active: true },
   ];
 
   const admins: AdminUser[] = [
@@ -130,7 +138,55 @@ function seed(db: Low<DbShape>) {
     },
   ];
 
-  db.data = { draws, tickets: sampleTickets, admins, customers: [], auditLogs: [], notifications: [] };
+  const winnerListDate = "2026-06-15";
+  const winnerRows: [number, string, string, string][] = [
+    [26, "Mehrullah Dasht", "Dasht", "United 125cc"],
+    [27, "145", "Gwadar", "United 125cc"],
+    [28, "BAba Jan", "Panjgur", "United 125cc"],
+    [29, "Nazer", "Panjgur", "United 125cc"],
+    [30, "Adres", "Sengani Sar", "United 125cc"],
+    [31, "Madihak", "Malik Abad Tr.", "United 125cc"],
+    [32, "Kizar", "Gwadar", "United 125cc"],
+    [33, "Shahed", "Zamuran", "United 125cc"],
+    [34, "Dedar Panjgur", "Panjgur", "United 125cc"],
+    [35, "Yaaro", "Bulaida", "United 125cc"],
+    [36, "Fatima", "Gwadar", "United 125cc"],
+    [37, "Makkahe Maath", "Karachi Liyari", "United 125cc"],
+    [38, "Sajid Karachi", "Karachi", "United 125cc"],
+    [39, "313", "Panjgur", "United 125cc"],
+    [40, "BAba Jan", "Panjgur", "United 125cc"],
+    [41, "Mohammad Naseem", "Turbat", "Axio (Silver)"],
+    [42, "Bebok Baloch", "Panjgur", "Premio (White)"],
+    [43, "Ustad Ilahibaksh", "Kappar", "Axio (Golden)"],
+    [44, "Bismillah", "Turbat Jusak", "Prado (3 Door)"],
+    [45, "Shetan Khan", "Ormara", "Axio (Silver)"],
+    [46, "Maryam", "Mand", "Axio (Surmgi)"],
+    [47, "Sotkage Arman", "Panwan", "Toyota (Altis)"],
+    [48, "Ayan", "Jewani", "Revo (G-R)"],
+    [49, "Shambu", "Pasni", "Double Door (2700)"],
+    [50, "Mr. Bean", "Jamak Balnigwar", "Prado (5 Door)"],
+  ];
+  const winnerEntries: WinnerEntry[] = winnerRows.map(([srNo, name, address, prize]) => ({
+    id: nanoid(),
+    listTitle: "Winners List 2",
+    listDate: winnerListDate,
+    srNo,
+    name,
+    address,
+    prize,
+    createdAt: new Date(now - 60 * day).toISOString(),
+  }));
+
+  db.data = {
+    draws,
+    tickets: sampleTickets,
+    admins,
+    customers: [],
+    auditLogs: [],
+    notifications: [],
+    winnerEntries,
+    messages: [],
+  };
 }
 
 export async function getDb() {
@@ -141,9 +197,21 @@ export async function getDb() {
     if (!db.data) db.data = defaultData;
     seed(db);
     await db.write();
-  } else if (!db.data.customers) {
-    db.data.customers = [];
-    await db.write();
+  } else {
+    let dirty = false;
+    if (!db.data.customers) {
+      db.data.customers = [];
+      dirty = true;
+    }
+    if (!db.data.winnerEntries) {
+      db.data.winnerEntries = [];
+      dirty = true;
+    }
+    if (!db.data.messages) {
+      db.data.messages = [];
+      dirty = true;
+    }
+    if (dirty) await db.write();
   }
   dbInstance = db;
   return db;
