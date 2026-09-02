@@ -72,12 +72,12 @@ function StatusContent() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="e.g. BLM-2026-000123 or BL-45001"
-            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
           />
           <button
             type="submit"
             disabled={loading}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+            className="rounded-xl bg-amber-600 px-6 py-3 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60 cursor-pointer"
           >
             {loading ? "Searching…" : "Search"}
           </button>

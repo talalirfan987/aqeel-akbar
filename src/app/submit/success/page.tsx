@@ -24,21 +24,21 @@ function SuccessContent() {
         <h1 className="text-xl font-bold text-slate-900">Your ticket has been submitted successfully.</h1>
         <p className="mt-2 text-sm text-slate-500">Keep this reference ID safe — you&apos;ll need it to track your ticket status.</p>
 
-        <div className="mt-6 rounded-xl border border-dashed border-blue-300 bg-blue-50 px-4 py-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-blue-500">Reference ID</p>
-          <p className="mt-1 text-2xl font-bold tracking-wide text-blue-700">{ref || "—"}</p>
+        <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-500">Reference ID</p>
+          <p className="mt-1 text-2xl font-bold tracking-wide text-amber-700">{ref || "—"}</p>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <button
             onClick={copy}
-            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:border-blue-300 cursor-pointer"
+            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:border-amber-300 cursor-pointer"
           >
             {copied ? "Copied!" : "Copy Reference ID"}
           </button>
           <Link
             href={`/status?ref=${encodeURIComponent(ref)}`}
-            className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            className="flex-1 rounded-xl bg-amber-600 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-700"
           >
             Check Status
           </Link>
@@ -47,7 +47,7 @@ function SuccessContent() {
         <p className="mt-6 text-xs text-slate-400">
           Your submission is now Pending Verification. An authorized operator will review it shortly.
         </p>
-        <Link href="/" className="mt-4 inline-block text-xs font-medium text-blue-600 hover:underline">
+        <Link href="/" className="mt-4 inline-block text-xs font-medium text-amber-600 hover:underline">
           ← Back to Home
         </Link>
       </div>

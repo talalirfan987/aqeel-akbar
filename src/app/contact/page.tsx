@@ -36,17 +36,17 @@ export default function ContactPage() {
           >
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Name</label>
-              <input required className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <input required className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Reference ID (optional)</label>
-              <input className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <input className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Message</label>
-              <textarea required rows={4} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <textarea required rows={4} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none" />
             </div>
-            <button type="submit" className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer">
+            <button type="submit" className="w-full rounded-xl bg-amber-600 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-700 cursor-pointer">
               Send Message
             </button>
           </form>
