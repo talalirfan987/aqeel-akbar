@@ -119,7 +119,16 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               <dl className="space-y-2 text-sm">
                 <Row label="Name" value={ticket.customerName} />
                 <Row label="Phone" value={ticket.phone} />
+                {ticket.city && <Row label="City" value={ticket.city} />}
                 {ticket.cnic && <Row label="CNIC" value={ticket.cnic} />}
+                {ticket.paymentMethod && (
+                  <Row
+                    label="Payment"
+                    value={`${ticket.paymentMethod === "jazzcash" ? "JazzCash" : "EasyPaisa"} — ${
+                      ticket.paymentConfirmed ? "Confirmed" : "Not confirmed"
+                    }`}
+                  />
+                )}
               </dl>
             )}
           </div>
@@ -134,6 +143,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               <dl className="space-y-2 text-sm">
                 <Row label="Ticket No." value={ticket.ticketNumber} />
                 <Row label="Draw" value={ticket.drawName} />
+                {ticket.quantity != null && <Row label="Number of Tickets" value={String(ticket.quantity)} />}
                 <Row label="Amount" value={`PKR ${ticket.amount.toLocaleString()}`} />
                 <Row label="Draw Date" value={ticket.drawDate} />
               </dl>
