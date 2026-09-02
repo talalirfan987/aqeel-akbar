@@ -243,7 +243,7 @@ export default function SubmitTicketPage() {
                       }}
                       className={`flex flex-col items-center gap-1 rounded-xl border-2 px-4 py-4 text-sm font-medium transition cursor-pointer ${
                         form.paymentMethod === m.id
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          ? "border-amber-500 bg-amber-50 text-amber-700"
                           : "border-slate-200 text-slate-600 hover:border-slate-300"
                       }`}
                     >
@@ -323,7 +323,7 @@ export default function SubmitTicketPage() {
             <div className="space-y-5">
               <h2 className="text-lg font-semibold text-slate-900">{steps[3]}</h2>
               <Field label="Upload Ticket / Receipt Photo" error={errors.ticketImage || fileError} required>
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-blue-400">
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-amber-400">
                   <span className="text-2xl">📎</span>
                   <span className="mt-2 text-sm font-medium text-slate-700">Click to upload or drag &amp; drop</span>
                   <span className="mt-1 text-xs text-slate-400">JPG, PNG or PDF · Max 5MB</span>
@@ -389,7 +389,7 @@ export default function SubmitTicketPage() {
             {step < steps.length - 1 ? (
               <button
                 onClick={next}
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 cursor-pointer"
+                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 cursor-pointer"
               >
                 Continue
               </button>
@@ -397,7 +397,7 @@ export default function SubmitTicketPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-60 cursor-pointer"
               >
                 {submitting ? "Submitting…" : "Submit Ticket"}
               </button>
@@ -416,12 +416,12 @@ function Stepper({ step }: { step: number }) {
         <li key={s} className="flex flex-1 items-center gap-2">
           <div
             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-              i <= step ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-500"
+              i <= step ? "bg-amber-600 text-white" : "bg-slate-200 text-slate-500"
             }`}
           >
             {i + 1}
           </div>
-          {i < steps.length - 1 && <div className={`h-0.5 flex-1 ${i < step ? "bg-blue-600" : "bg-slate-200"}`} />}
+          {i < steps.length - 1 && <div className={`h-0.5 flex-1 ${i < step ? "bg-amber-600" : "bg-slate-200"}`} />}
         </li>
       ))}
     </ol>
@@ -464,6 +464,6 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function inputCls(hasError: boolean) {
   return `w-full rounded-xl border px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-    hasError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:border-blue-400 focus:ring-blue-100"
+    hasError ? "border-red-300 focus:ring-red-200" : "border-slate-200 focus:border-amber-400 focus:ring-amber-100"
   }`;
 }
