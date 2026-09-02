@@ -17,7 +17,7 @@ export default function LanguageSwitcher() {
           key={o.value}
           onClick={() => setLang(o.value)}
           className={`rounded-full px-2.5 py-1 transition-colors cursor-pointer ${
-            lang === o.value ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-900"
+            lang === o.value ? "bg-amber-600 text-white" : "text-slate-500 hover:text-slate-900"
           }`}
         >
           {o.label}

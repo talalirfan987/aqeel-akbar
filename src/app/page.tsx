@@ -15,31 +15,47 @@ export default function Home() {
 
   return (
     <main className="flex-1">
-      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-blue-50 via-white to-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+      <section className="relative overflow-hidden bg-slate-950">
+        {/* Luxury showroom backdrop image (same as login page) */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-cover bg-top"
+          style={{ backgroundImage: "url('/images/login-bg.jpg')" }}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-slate-950/50" />
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-              Digital Record Management Platform
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-medium tracking-wide text-amber-300">
+              ✦ Digital Record Management Platform
             </span>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">{t("heroTitle")}</h1>
-            <p className="mt-4 text-base text-slate-600 sm:text-lg">{t("heroSubtitle")}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">
+              {t("heroTitle").split(" ").map((w, i) =>
+                i === 0 ? (
+                  <span key={i} className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
+                    {w}{" "}
+                  </span>
+                ) : (
+                  w + " "
+                )
+              )}
+            </h1>
+            <p className="mt-4 text-base text-slate-300 sm:text-lg">{t("heroSubtitle")}</p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/submit"
-                className="w-full rounded-xl bg-blue-600 px-6 py-3.5 text-center text-base font-semibold text-white shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3.5 text-center text-base font-semibold text-slate-900 shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-amber-600 sm:w-auto"
               >
                 {t("submitTicket")}
               </Link>
               <Link
                 href="/status"
-                className="w-full rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-center text-base font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 sm:w-auto"
+                className="w-full rounded-xl border border-amber-400/30 bg-white/5 px-6 py-3.5 text-center text-base font-semibold text-amber-100 hover:border-amber-400/60 hover:bg-white/10 sm:w-auto"
               >
                 {t("checkStatus")}
               </Link>
             </div>
 
-            <p className="mx-auto mt-6 max-w-xl text-xs text-slate-400">{t("disclaimer")}</p>
+            <p className="mx-auto mt-6 max-w-xl text-xs text-slate-500">{t("disclaimer")}</p>
           </div>
         </div>
       </section>
@@ -49,10 +65,10 @@ export default function Home() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
             <div key={s.key} className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-2xl">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-2xl">
                 {s.icon}
               </div>
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-blue-600">Step {i + 1}</div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-amber-600">Step {i + 1}</div>
               <p className="text-sm font-medium text-slate-700">{t(s.key)}</p>
             </div>
           ))}

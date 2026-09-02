@@ -2,15 +2,15 @@ export default function StatCard({
   label,
   value,
   icon,
-  accent = "blue",
+  accent = "gold",
 }: {
   label: string;
   value: string | number;
   icon: string;
-  accent?: "blue" | "amber" | "emerald" | "red" | "slate" | "purple";
+  accent?: "gold" | "amber" | "emerald" | "red" | "slate" | "purple";
 }) {
   const accents: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-600",
+    gold: "bg-slate-900 text-amber-400",
     amber: "bg-amber-50 text-amber-600",
     emerald: "bg-emerald-50 text-emerald-600",
     red: "bg-red-50 text-red-600",
