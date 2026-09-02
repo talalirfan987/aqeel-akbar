@@ -8,17 +8,23 @@ export interface Draw {
   active: boolean;
 }
 
+export type PaymentMethod = "jazzcash" | "easypaisa";
+
 export interface Ticket {
   id: string;
   referenceId: string;
   customerName: string;
   phone: string;
+  city: string;
   cnic?: string;
   ticketNumber: string;
+  quantity: number;
   drawId: string;
   drawName: string;
   amount: number;
   drawDate: string;
+  paymentMethod: PaymentMethod;
+  paymentConfirmed: boolean;
   ticketImage?: string; // data URL
   ticketImageName?: string;
   status: TicketStatus;
