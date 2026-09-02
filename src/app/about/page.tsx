@@ -2,13 +2,27 @@ export default function AboutPage() {
   return (
     <main className="flex-1 bg-white">
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900">About This Platform</h1>
+        <h1 className="text-2xl font-bold text-slate-900">About Akeel Akbar Lottery</h1>
         <div className="mt-6 space-y-4 text-sm leading-relaxed text-slate-600">
           <p>
-            The Balochistan Lottery Management System is a digital record-management platform built to replace
-            manual, paper-based ticket record keeping. It allows customers to submit their ticket information and
-            receipt photos digitally, and allows an authorized operator to verify, track, and manage those records
-            from a secure dashboard.
+            My name is Akeel Akbar, and I&apos;m originally from Turbat, Balochistan. I have been running my lottery
+            business for years, and over that time I&apos;ve built a large, loyal customer base of people who trust
+            me with their tickets draw after draw.
+          </p>
+          <p>
+            If you&apos;re a new customer, I understand that trust has to be earned before you hand over your money.
+            That&apos;s exactly why I run everything openly and transparently — every draw, every result, and every
+            winner is out in the open for everyone to see, not hidden away. Nothing happens behind closed doors.
+          </p>
+          <p>
+            This platform is part of that transparency. Every ticket you submit gets a reference ID you can track
+            yourself, every verification is logged, and every winner is published on the{" "}
+            <a href="/winners" className="font-medium text-amber-700 underline">
+              Winners
+            </a>{" "}
+            page for anyone to check. You don&apos;t have to just take my word for it — you can watch how I operate
+            in this industry, see the results for yourself, and then decide to trust me. That&apos;s how I&apos;ve
+            built my business, and that&apos;s how I intend to keep it.
           </p>
           <p>
             This platform does not itself conduct or officiate any draw, and it does not guarantee any winning
