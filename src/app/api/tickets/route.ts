@@ -12,16 +12,19 @@ const submitSchema = z.object({
     .string()
     .trim()
     .regex(/^03\d{9}$/, "Enter a valid Pakistani mobile number (e.g. 03001234567)"),
+  city: z.string().trim().min(2, "Please enter your city").max(60),
   cnic: z
     .string()
     .trim()
     .regex(/^\d{5}-\d{7}-\d{1}$/, "CNIC must look like 12345-1234567-1")
     .optional()
     .or(z.literal("")),
-  ticketNumber: z.string().trim().min(2).max(30),
+  quantity: z.coerce.number().int().positive("Enter a valid number of tickets").default(1),
   drawId: z.string().min(1),
   amount: z.coerce.number().positive("Amount must be greater than 0"),
   drawDate: z.string().min(1),
+  paymentMethod: z.enum(["jazzcash", "easypaisa"], { error: "Select a payment method" }),
+  paymentConfirmed: z.literal(true, { error: "Please confirm your payment before submitting" }),
   ticketImage: z.string().optional(),
   ticketImageName: z.string().optional(),
 });
@@ -85,26 +88,32 @@ export async function POST(req: NextRequest) {
   const db = await getDb();
   const draw = db.data!.draws.find((d) => d.id === data.drawId);
   if (!draw) return NextResponse.json({ error: "Selected draw was not found" }, { status: 400 });
+  if (data.amount !== draw.ticketPrice * data.quantity) {
+    return NextResponse.json({ error: "Amount does not match the selected draw's ticket price" }, { status: 400 });
+  }
 
-  const isDuplicate = db.data!.tickets.some(
-    (t) => t.ticketNumber.toLowerCase() === data.ticketNumber.toLowerCase() && t.status !== "rejected"
-  );
+  const referenceId = nextReferenceId(db.data!.tickets);
+  const ticketNumber = `TK-${referenceId.split("-").pop()}`;
 
   const ticket: Ticket = {
     id: nanoid(),
-    referenceId: nextReferenceId(db.data!.tickets),
+    referenceId,
     customerName: data.customerName,
     phone: data.phone,
+    city: data.city,
     cnic: data.cnic || undefined,
-    ticketNumber: data.ticketNumber,
+    ticketNumber,
+    quantity: data.quantity,
     drawId: draw.id,
     drawName: draw.name,
     amount: data.amount,
     drawDate: data.drawDate,
+    paymentMethod: data.paymentMethod,
+    paymentConfirmed: data.paymentConfirmed,
     ticketImage: data.ticketImage,
     ticketImageName: data.ticketImageName,
     status: "pending",
-    isDuplicate,
+    isDuplicate: false,
     submittedAt: new Date().toISOString(),
   };
 
@@ -119,5 +128,5 @@ export async function POST(req: NextRequest) {
   });
   await db.write();
 
-  return NextResponse.json({ referenceId: ticket.referenceId, isDuplicate }, { status: 201 });
+  return NextResponse.json({ referenceId: ticket.referenceId, isDuplicate: ticket.isDuplicate }, { status: 201 });
 }
