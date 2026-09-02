@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Logo from "@/components/Logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -42,15 +43,13 @@ function LoginForm() {
         className="pointer-events-none absolute inset-0 bg-cover bg-top"
         style={{ backgroundImage: "url('/images/login-bg.jpg')" }}
       />
-      <div className="pointer-events-none absolute inset-0 bg-slate-950/40" />
+      <div className="pointer-events-none absolute inset-0 bg-slate-950/45" />
 
-      <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/20 bg-slate-950/80 p-8 shadow-[0_0_60px_rgba(217,161,58,0.08)] backdrop-blur">
+      <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/20 bg-slate-950/35 p-8 shadow-[0_0_60px_rgba(217,161,58,0.08)]">
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 font-bold text-slate-900 shadow-[0_0_20px_rgba(217,161,58,0.35)]">
-            BL
-          </span>
+          <Logo className="mx-auto mb-3 h-12 w-12 drop-shadow-[0_0_20px_rgba(217,161,58,0.35)]" />
           <h1 className="text-lg font-bold text-white">Admin Dashboard</h1>
-          <p className="mt-1 text-xs text-amber-200/50">Balochistan Lottery Management System</p>
+          <p className="mt-1 text-xs text-amber-200/50">Akeel Akbar Lottery Management System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,7 +58,7 @@ function LoginForm() {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-amber-500"
+              className="auth-input w-full rounded-xl border border-amber-400/30 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 outline-none focus:border-amber-400/60 focus:bg-white/10"
               placeholder="admin"
               autoFocus
             />
@@ -70,7 +69,7 @@ function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-amber-500"
+              className="auth-input w-full rounded-xl border border-amber-400/30 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 outline-none focus:border-amber-400/60 focus:bg-white/10"
               placeholder="••••••••"
             />
           </div>

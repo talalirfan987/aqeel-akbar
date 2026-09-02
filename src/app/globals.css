@@ -33,3 +33,14 @@ svg {
 * {
   scrollbar-width: thin;
 }
+
+/* Keep our dark/glassy input styling instead of the browser's light autofill background
+   on the dark login/signup pages (scoped so light-themed admin/ticket forms are unaffected). */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  transition: background-color 0s 600000s, color 0s 600000s;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.05) inset;
+}
