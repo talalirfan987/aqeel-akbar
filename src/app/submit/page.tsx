@@ -2,33 +2,49 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Draw } from "@/lib/types";
+import type { Draw, PaymentMethod } from "@/lib/types";
 
 type FormState = {
-  customerName: string;
-  phone: string;
-  cnic: string;
   drawId: string;
-  ticketNumber: string;
+  quantity: string;
   amount: string;
   drawDate: string;
+  paymentMethod: PaymentMethod | "";
+  paymentConfirmed: boolean;
+  customerName: string;
+  phone: string;
+  city: string;
+  cnic: string;
   ticketImage: string;
   ticketImageName: string;
 };
 
+function todayDate() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 const empty: FormState = {
+  drawId: "",
+  quantity: "1",
+  amount: "",
+  drawDate: todayDate(),
+  paymentMethod: "",
+  paymentConfirmed: false,
   customerName: "",
   phone: "",
+  city: "",
   cnic: "",
-  drawId: "",
-  ticketNumber: "",
-  amount: "",
-  drawDate: "",
   ticketImage: "",
   ticketImageName: "",
 };
 
-const steps = ["Customer Information", "Ticket Information", "Ticket Verification", "Confirmation"];
+const steps = ["Ticket & Draw", "Payment", "Your Information", "Ticket Verification", "Confirmation"];
+
+const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
+  { id: "jazzcash", label: "JazzCash", icon: "📱" },
+  { id: "easypaisa", label: "EasyPaisa", icon: "💳" },
+];
 
 export default function SubmitTicketPage() {
   const router = useRouter();
@@ -39,6 +55,8 @@ export default function SubmitTicketPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [fileError, setFileError] = useState("");
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [paymentCheckMsg, setPaymentCheckMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/draws")
@@ -52,17 +70,22 @@ export default function SubmitTicketPage() {
   function validateStep(current: number): boolean {
     const e: Record<string, string> = {};
     if (current === 0) {
-      if (form.customerName.trim().length < 3) e.customerName = "Please enter your full name (min 3 characters)";
-      if (!/^03\d{9}$/.test(form.phone.trim())) e.phone = "Enter a valid mobile number (e.g. 03001234567)";
-      if (form.cnic && !/^\d{5}-\d{7}-\d{1}$/.test(form.cnic.trim())) e.cnic = "CNIC should look like 12345-1234567-1";
-    }
-    if (current === 1) {
       if (!form.drawId) e.drawId = "Please select a lottery/draw";
-      if (form.ticketNumber.trim().length < 2) e.ticketNumber = "Enter a valid ticket number";
+      if (!form.quantity || Number(form.quantity) <= 0) e.quantity = "Enter a valid number of tickets";
       if (!form.amount || Number(form.amount) <= 0) e.amount = "Enter a valid ticket amount";
       if (!form.drawDate) e.drawDate = "Select the draw date";
     }
+    if (current === 1) {
+      if (!form.paymentMethod) e.paymentMethod = "Please select a payment method";
+      if (!form.paymentConfirmed) e.paymentConfirmed = "Please confirm the payment before continuing";
+    }
     if (current === 2) {
+      if (form.customerName.trim().length < 3) e.customerName = "Please enter your full name (min 3 characters)";
+      if (!/^03\d{9}$/.test(form.phone.trim())) e.phone = "Enter a valid mobile number (e.g. 03001234567)";
+      if (form.city.trim().length < 2) e.city = "Please enter your city";
+      if (form.cnic && !/^\d{5}-\d{7}-\d{1}$/.test(form.cnic.trim())) e.cnic = "CNIC should look like 12345-1234567-1";
+    }
+    if (current === 3) {
       if (!form.ticketImage) e.ticketImage = "Please upload a photo of your ticket/receipt";
     }
     setErrors(e);
@@ -75,6 +98,22 @@ export default function SubmitTicketPage() {
   function back() {
     setErrors({});
     setStep((s) => Math.max(s - 1, 0));
+  }
+
+  // Mock payment-status check. Once JazzCash/EasyPaisa merchant credentials are
+  // available this should call their real payment-status API instead.
+  async function checkPaymentReceived() {
+    if (!form.paymentMethod) {
+      setErrors((er) => ({ ...er, paymentMethod: "Please select a payment method" }));
+      return;
+    }
+    setCheckingPayment(true);
+    setPaymentCheckMsg("");
+    await new Promise((r) => setTimeout(r, 1200));
+    update({ paymentConfirmed: true });
+    setErrors((er) => ({ ...er, paymentConfirmed: "" }));
+    setPaymentCheckMsg(`Payment received via ${form.paymentMethod === "jazzcash" ? "JazzCash" : "EasyPaisa"}.`);
+    setCheckingPayment(false);
   }
 
   function onFile(file: File | null) {
@@ -95,7 +134,7 @@ export default function SubmitTicketPage() {
   }
 
   async function handleSubmit() {
-    if (!validateStep(2)) return;
+    if (!validateStep(3)) return;
     setSubmitting(true);
     setSubmitError("");
     try {
@@ -123,7 +162,7 @@ export default function SubmitTicketPage() {
     <main className="flex-1 bg-slate-50">
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
         <h1 className="text-2xl font-bold text-slate-900">Submit Your Ticket</h1>
-        <p className="mt-1 text-sm text-slate-500">Fill in your details across four quick steps.</p>
+        <p className="mt-1 text-sm text-slate-500">Fill in your details across five quick steps.</p>
 
         <Stepper step={step} />
 
@@ -131,6 +170,119 @@ export default function SubmitTicketPage() {
           {step === 0 && (
             <div className="space-y-5">
               <h2 className="text-lg font-semibold text-slate-900">{steps[0]}</h2>
+              <Field label="Lottery / Draw" error={errors.drawId} required>
+                <select
+                  className={inputCls(!!errors.drawId)}
+                  value={form.drawId}
+                  onChange={(e) => {
+                    const d = draws.find((x) => x.id === e.target.value);
+                    const qty = Number(form.quantity) || 1;
+                    update({
+                      drawId: e.target.value,
+                      amount: d ? String(d.ticketPrice * qty) : form.amount,
+                    });
+                  }}
+                >
+                  <option value="">Select a draw</option>
+                  {draws.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} — {d.drawDate}
+                    </option>
+                  ))}
+                </select>
+                {draws.length === 0 && <p className="mt-1 text-xs text-slate-400">Loading available draws…</p>}
+              </Field>
+              <Field label="Number of Tickets" error={errors.quantity} required>
+                <input
+                  type="number"
+                  min={1}
+                  className={inputCls(!!errors.quantity)}
+                  value={form.quantity}
+                  onChange={(e) => {
+                    const qty = Math.max(1, Number(e.target.value) || 1);
+                    const d = draws.find((x) => x.id === form.drawId);
+                    update({ quantity: String(qty), amount: d ? String(d.ticketPrice * qty) : form.amount });
+                  }}
+                />
+              </Field>
+              <Field label="Ticket Amount (PKR)" error={errors.amount} hint={form.drawId ? "Set automatically: number of tickets × ticket price" : undefined} required>
+                <input
+                  type="text"
+                  readOnly
+                  className={`${inputCls(!!errors.amount)} bg-slate-50 text-slate-700 cursor-not-allowed`}
+                  value={form.amount ? `PKR ${form.amount}` : ""}
+                  placeholder="Select a draw first"
+                />
+              </Field>
+              <Field label="Draw Date" error={errors.drawDate} hint="Set automatically to today's date" required>
+                <input
+                  type="date"
+                  readOnly
+                  className={`${inputCls(!!errors.drawDate)} bg-slate-50 text-slate-700 cursor-not-allowed`}
+                  value={form.drawDate}
+                />
+              </Field>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-5">
+              <h2 className="text-lg font-semibold text-slate-900">{steps[1]}</h2>
+              <p className="text-sm text-slate-500">
+                Pay <span className="font-semibold text-slate-900">PKR {form.amount || 0}</span> using your preferred method, then confirm below.
+              </p>
+              <Field label="Payment Method" error={errors.paymentMethod} required>
+                <div className="grid grid-cols-2 gap-3">
+                  {paymentMethods.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        update({ paymentMethod: m.id, paymentConfirmed: false });
+                        setPaymentCheckMsg("");
+                      }}
+                      className={`flex flex-col items-center gap-1 rounded-xl border-2 px-4 py-4 text-sm font-medium transition cursor-pointer ${
+                        form.paymentMethod === m.id
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-slate-200 text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="text-2xl">{m.icon}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm text-slate-600">
+                  Once you have sent the payment, tap the button below. We&apos;ll check whether it has been received.
+                </p>
+                <button
+                  type="button"
+                  onClick={checkPaymentReceived}
+                  disabled={checkingPayment || form.paymentConfirmed}
+                  className="mt-3 w-full rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 cursor-pointer"
+                >
+                  {checkingPayment
+                    ? "Checking payment…"
+                    : form.paymentConfirmed
+                    ? "✓ Payment Confirmed"
+                    : "I've Paid — Confirm Payment"}
+                </button>
+                {errors.paymentConfirmed && (
+                  <p className="mt-2 text-xs font-medium text-red-600">{errors.paymentConfirmed}</p>
+                )}
+                {paymentCheckMsg && (
+                  <p className="mt-2 text-xs font-medium text-emerald-600">{paymentCheckMsg}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-5">
+              <h2 className="text-lg font-semibold text-slate-900">{steps[2]}</h2>
               <Field label="Full Name" error={errors.customerName} required>
                 <input
                   className={inputCls(!!errors.customerName)}
@@ -148,6 +300,14 @@ export default function SubmitTicketPage() {
                   inputMode="numeric"
                 />
               </Field>
+              <Field label="City" error={errors.city} required>
+                <input
+                  className={inputCls(!!errors.city)}
+                  value={form.city}
+                  onChange={(e) => update({ city: e.target.value })}
+                  placeholder="e.g. Lahore"
+                />
+              </Field>
               <Field label="CNIC / ID (optional)" error={errors.cnic} hint="Only if required by regulation">
                 <input
                   className={inputCls(!!errors.cnic)}
@@ -159,58 +319,9 @@ export default function SubmitTicketPage() {
             </div>
           )}
 
-          {step === 1 && (
+          {step === 3 && (
             <div className="space-y-5">
-              <h2 className="text-lg font-semibold text-slate-900">{steps[1]}</h2>
-              <Field label="Lottery / Draw" error={errors.drawId} required>
-                <select
-                  className={inputCls(!!errors.drawId)}
-                  value={form.drawId}
-                  onChange={(e) => {
-                    const d = draws.find((x) => x.id === e.target.value);
-                    update({ drawId: e.target.value, amount: d ? String(d.ticketPrice) : form.amount, drawDate: d?.drawDate || "" });
-                  }}
-                >
-                  <option value="">Select a draw</option>
-                  {draws.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} — {d.drawDate}
-                    </option>
-                  ))}
-                </select>
-                {draws.length === 0 && <p className="mt-1 text-xs text-slate-400">Loading available draws…</p>}
-              </Field>
-              <Field label="Ticket Number" error={errors.ticketNumber} required>
-                <input
-                  className={inputCls(!!errors.ticketNumber)}
-                  value={form.ticketNumber}
-                  onChange={(e) => update({ ticketNumber: e.target.value })}
-                  placeholder="BL-45001"
-                />
-              </Field>
-              <Field label="Ticket Amount (PKR)" error={errors.amount} required>
-                <input
-                  type="number"
-                  min={0}
-                  className={inputCls(!!errors.amount)}
-                  value={form.amount}
-                  onChange={(e) => update({ amount: e.target.value })}
-                />
-              </Field>
-              <Field label="Draw Date" error={errors.drawDate} required>
-                <input
-                  type="date"
-                  className={inputCls(!!errors.drawDate)}
-                  value={form.drawDate}
-                  onChange={(e) => update({ drawDate: e.target.value })}
-                />
-              </Field>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-5">
-              <h2 className="text-lg font-semibold text-slate-900">{steps[2]}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{steps[3]}</h2>
               <Field label="Upload Ticket / Receipt Photo" error={errors.ticketImage || fileError} required>
                 <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-blue-400">
                   <span className="text-2xl">📎</span>
@@ -240,18 +351,25 @@ export default function SubmitTicketPage() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-5">
-              <h2 className="text-lg font-semibold text-slate-900">{steps[3]}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{steps[4]}</h2>
               <p className="text-sm text-slate-500">Please review your details before submitting.</p>
               <dl className="divide-y divide-slate-100 rounded-xl border border-slate-200">
-                <Row label="Full Name" value={form.customerName} />
-                <Row label="Mobile Number" value={form.phone} />
-                {form.cnic && <Row label="CNIC / ID" value={form.cnic} />}
                 <Row label="Lottery / Draw" value={selectedDraw?.name || "—"} />
-                <Row label="Ticket Number" value={form.ticketNumber} />
+                <Row label="Number of Tickets" value={form.quantity} />
                 <Row label="Amount" value={`PKR ${form.amount}`} />
                 <Row label="Draw Date" value={form.drawDate} />
+                <Row
+                  label="Payment"
+                  value={`${form.paymentMethod === "jazzcash" ? "JazzCash" : "EasyPaisa"} — ${
+                    form.paymentConfirmed ? "Confirmed" : "Not confirmed"
+                  }`}
+                />
+                <Row label="Full Name" value={form.customerName} />
+                <Row label="Mobile Number" value={form.phone} />
+                <Row label="City" value={form.city} />
+                {form.cnic && <Row label="CNIC / ID" value={form.cnic} />}
                 <Row label="Ticket Image" value={form.ticketImageName || "Not attached"} />
               </dl>
               {submitError && (
@@ -268,7 +386,7 @@ export default function SubmitTicketPage() {
             >
               Back
             </button>
-            {step < 3 ? (
+            {step < steps.length - 1 ? (
               <button
                 onClick={next}
                 className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 cursor-pointer"
