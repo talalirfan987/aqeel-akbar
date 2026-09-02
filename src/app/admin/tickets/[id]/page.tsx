@@ -3,6 +3,7 @@
 import { useEffect, useState, use as usePromise } from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import MessageThread from "@/components/MessageThread";
 import type { Ticket } from "@/lib/types";
 
 export default function TicketDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,6 +17,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
   const [editing, setEditing] = useState(false);
   const [edit, setEdit] = useState({ customerName: "", phone: "", ticketNumber: "", amount: "" });
   const [duplicateOf, setDuplicateOf] = useState<Ticket | null>(null);
+  const [prize, setPrize] = useState("");
 
   async function load() {
     setLoading(true);
@@ -28,6 +30,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
     }
     setTicket(data.ticket);
     setNotes(data.ticket.adminNotes || "");
+    setPrize(data.ticket.prize || "");
     setEdit({
       customerName: data.ticket.customerName,
       phone: data.ticket.phone,
@@ -224,8 +227,46 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
         )}
       </div>
 
+      <MessageThread ticketId={ticket.id} viewerRole="admin" />
+
       {ticket.status === "verified" && (
         <DigitalReceipt ticket={ticket} />
+      )}
+
+      {ticket.status === "verified" && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="mb-3 text-sm font-bold text-slate-900">Winner</h2>
+          {ticket.isWinner ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-emerald-700">
+                🏆 Marked as a winner{ticket.prize ? ` — ${ticket.prize}` : ""}.
+              </p>
+              <button
+                onClick={() => act("unmark_winner")}
+                disabled={busy}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer"
+              >
+                Remove from Winners
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                value={prize}
+                onChange={(e) => setPrize(e.target.value)}
+                placeholder="Prize (optional, e.g. 1st Prize — PKR 100,000)"
+                className={fieldCls + " sm:w-80"}
+              />
+              <button
+                onClick={() => act("mark_winner", { prize })}
+                disabled={busy}
+                className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer"
+              >
+                Mark as Winner
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {confirmAction && (
@@ -309,7 +350,7 @@ function DigitalReceipt({ ticket }: { ticket: Ticket }) {
       <h2 className="mb-4 text-sm font-bold text-slate-900">Digital Receipt</h2>
       <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/50 p-5 text-sm">
         <p className="text-center text-xs font-semibold uppercase tracking-wide text-amber-700">
-          Balochistan Lottery Management System
+          Akeel Akbar Lottery Management System
         </p>
         <div className="mt-4 space-y-1.5">
           <Row label="Reference ID" value={ticket.referenceId} />

@@ -4,12 +4,13 @@ import { getDb } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
 const patchSchema = z.object({
-  action: z.enum(["verify", "reject", "cancel", "edit", "mark_duplicate", "unmark_duplicate"]),
+  action: z.enum(["verify", "reject", "cancel", "edit", "mark_duplicate", "unmark_duplicate", "mark_winner", "unmark_winner"]),
   adminNotes: z.string().max(1000).optional(),
   customerName: z.string().min(3).max(100).optional(),
   phone: z.string().regex(/^03\d{9}$/).optional(),
   ticketNumber: z.string().min(2).max(30).optional(),
   amount: z.coerce.number().positive().optional(),
+  prize: z.string().max(200).optional(),
 });
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -68,6 +69,20 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     });
   };
 
+  // Post this as the first message in the ticket's chat thread, so the customer can see it
+  // (and reply) as a conversation rather than a one-off notice.
+  const postMessage = (text: string) => {
+    db.data!.messages.push({
+      id: crypto.randomUUID(),
+      ticketId: ticket.id,
+      referenceId: ticket.referenceId,
+      sender: "admin",
+      senderName: session.name || session.username,
+      text,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
   switch (input.action) {
     case "verify": {
       const dup = db.data!.tickets.some(
@@ -85,6 +100,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       if (input.adminNotes) ticket.adminNotes = input.adminNotes;
       log(`Admin verified ticket ${ticket.referenceId}`);
       notify("verified", "Your ticket has been verified.");
+      postMessage(input.adminNotes ? `Your ticket has been verified. ${input.adminNotes}` : "Your ticket has been verified. ✅");
       break;
     }
     case "reject": {
@@ -94,6 +110,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       ticket.adminNotes = input.adminNotes || ticket.adminNotes;
       log(`Admin rejected ticket ${ticket.referenceId}`, input.adminNotes);
       notify("rejected", "Your ticket requires attention. Please contact the authorized operator.");
+      postMessage(
+        input.adminNotes
+          ? `Your ticket was rejected: ${input.adminNotes}`
+          : "Your ticket was rejected. Please contact us for details."
+      );
       break;
     }
     case "cancel": {
@@ -101,6 +122,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       ticket.adminNotes = input.adminNotes || ticket.adminNotes;
       log(`Admin cancelled ticket ${ticket.referenceId}`, input.adminNotes);
       notify("cancelled", "Your ticket has been cancelled by the operator. Please contact support for details.");
+      postMessage(
+        input.adminNotes
+          ? `Your ticket has been cancelled: ${input.adminNotes}`
+          : "Your ticket has been cancelled. Please contact us if you have questions."
+      );
       break;
     }
     case "mark_duplicate": {
@@ -111,6 +137,20 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     case "unmark_duplicate": {
       ticket.isDuplicate = false;
       log(`Admin cleared duplicate flag on ticket ${ticket.referenceId}`);
+      break;
+    }
+    case "mark_winner": {
+      if (ticket.status !== "verified") {
+        return NextResponse.json({ error: "Only verified tickets can be marked as winners." }, { status: 409 });
+      }
+      ticket.isWinner = true;
+      ticket.prize = input.prize || ticket.prize;
+      log(`Admin marked ticket ${ticket.referenceId} as a winner`, input.prize);
+      break;
+    }
+    case "unmark_winner": {
+      ticket.isWinner = false;
+      log(`Admin cleared winner flag on ticket ${ticket.referenceId}`);
       break;
     }
     case "edit": {
