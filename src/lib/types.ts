@@ -33,6 +33,15 @@ export interface Ticket {
   submittedAt: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  customerId?: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  passwordHash: string;
+  createdAt: string;
 }
 
 export interface AdminUser {
@@ -67,6 +76,7 @@ export interface DbShape {
   draws: Draw[];
   tickets: Ticket[];
   admins: AdminUser[];
+  customers: Customer[];
   auditLogs: AuditLog[];
   notifications: Notification[];
 }

@@ -8,7 +8,7 @@ import type { DbShape, Draw, Ticket, AdminUser } from "./types";
 const file = path.join(process.cwd(), "src", "data", "db.json");
 const adapter = new JSONFile<DbShape>(file);
 
-const defaultData: DbShape = { draws: [], tickets: [], admins: [], auditLogs: [], notifications: [] };
+const defaultData: DbShape = { draws: [], tickets: [], admins: [], customers: [], auditLogs: [], notifications: [] };
 
 let dbInstance: Low<DbShape> | null = null;
 
@@ -130,7 +130,7 @@ function seed(db: Low<DbShape>) {
     },
   ];
 
-  db.data = { draws, tickets: sampleTickets, admins, auditLogs: [], notifications: [] };
+  db.data = { draws, tickets: sampleTickets, admins, customers: [], auditLogs: [], notifications: [] };
 }
 
 export async function getDb() {
@@ -140,6 +140,9 @@ export async function getDb() {
   if (!db.data || !db.data.tickets || db.data.tickets.length === 0) {
     if (!db.data) db.data = defaultData;
     seed(db);
+    await db.write();
+  } else if (!db.data.customers) {
+    db.data.customers = [];
     await db.write();
   }
   dbInstance = db;
