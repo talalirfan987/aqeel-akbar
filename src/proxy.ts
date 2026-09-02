@@ -29,33 +29,32 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/account")) {
-    const token = req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;
-    const session = token ? await verifyCustomerSessionFromToken(token) : null;
+  // Every other page requires a logged-in customer.
+  const token = req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;
+  const session = token ? await verifyCustomerSessionFromToken(token) : null;
 
-    if (pathname === "/account/login" || pathname === "/account/signup") {
-      if (session) {
-        const url = req.nextUrl.clone();
-        url.pathname = "/account";
-        url.search = "";
-        return NextResponse.redirect(url);
-      }
-      return NextResponse.next();
-    }
-
-    if (!session) {
+  if (pathname === "/account/login" || pathname === "/account/signup") {
+    if (session) {
       const url = req.nextUrl.clone();
-      url.pathname = "/account/login";
-      url.searchParams.set("next", pathname);
+      url.pathname = "/account";
+      url.search = "";
       return NextResponse.redirect(url);
     }
-
     return NextResponse.next();
+  }
+
+  if (!session) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/account/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/account/:path*"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|opengraph-image|twitter-image|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|css|js|map)$).*)",
+  ],
 };
