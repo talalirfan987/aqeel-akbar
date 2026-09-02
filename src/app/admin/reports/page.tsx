@@ -44,9 +44,14 @@ export default function ReportsPage() {
           <h1 className="text-xl font-bold text-slate-900">Reports</h1>
           <p className="text-sm text-slate-500">Generate summary reports across ticket submissions.</p>
         </div>
-        <a href="/api/tickets/export" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-amber-300 hover:text-amber-600">
-          ⬇ Export All Tickets (CSV)
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a href="/api/tickets/export" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-amber-300 hover:text-amber-600">
+            ⬇ Export All Tickets (CSV)
+          </a>
+          <a href="/api/tickets/export-verified" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 hover:border-amber-400 hover:bg-amber-100">
+            ⬇ Export Verified Customers (Name, Phone, City)
+          </a>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

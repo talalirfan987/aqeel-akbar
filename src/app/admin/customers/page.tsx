@@ -24,9 +24,17 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Customers</h1>
-        <p className="text-sm text-slate-500">Customer records derived from ticket submissions.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Customers</h1>
+          <p className="text-sm text-slate-500">Customer records derived from ticket submissions.</p>
+        </div>
+        <a
+          href="/api/tickets/export-verified"
+          className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 hover:border-amber-400 hover:bg-amber-100"
+        >
+          ⬇ Export Verified Customers (Name, Phone, City)
+        </a>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
