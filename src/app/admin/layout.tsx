@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import AdminLogoutButton from "@/components/AdminLogoutButton";
+import Logo from "@/components/Logo";
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/tickets", label: "Tickets", icon: "🎟️" },
+  { href: "/admin/conversations", label: "Conversations", icon: "💬" },
   { href: "/admin/customers", label: "Customers", icon: "👥" },
   { href: "/admin/draws", label: "Draws", icon: "🎯" },
+  { href: "/admin/winners", label: "Winners List", icon: "🏆" },
   { href: "/admin/reports", label: "Reports", icon: "📈" },
   { href: "/admin/notifications", label: "Notifications", icon: "🔔" },
   { href: "/admin/audit-logs", label: "Audit Logs", icon: "🛡️" },
@@ -24,11 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-screen bg-slate-100">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-amber-500/10 bg-slate-950 p-4 md:flex">
         <Link href="/admin" className="mb-6 flex items-center gap-2 px-2 text-white">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 text-sm font-bold text-slate-900 shadow-[0_0_16px_rgba(217,161,58,0.3)]">
-            BL
-          </span>
+          <Logo className="h-9 w-9 shrink-0 drop-shadow-[0_0_16px_rgba(217,161,58,0.3)]" />
           <span className="text-sm font-semibold leading-tight">
-            Balochistan Lottery
+            Akeel Akbar Lottery
             <span className="block text-[11px] font-normal text-amber-200/50">Admin Dashboard</span>
           </span>
         </Link>
@@ -55,7 +56,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
           <Link href="/admin" className="flex items-center gap-2 font-semibold text-slate-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-xs text-slate-900">BL</span>
+            <Logo className="h-8 w-8 shrink-0" />
             Admin
           </Link>
           <AdminLogoutButton />
