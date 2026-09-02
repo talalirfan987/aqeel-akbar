@@ -3,6 +3,7 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { getDb, nextReferenceId } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { getCustomerSession } from "@/lib/customerAuth";
 import { isRateLimited } from "@/lib/rateLimit";
 import type { Ticket } from "@/lib/types";
 
@@ -94,6 +95,7 @@ export async function POST(req: NextRequest) {
 
   const referenceId = nextReferenceId(db.data!.tickets);
   const ticketNumber = `TK-${referenceId.split("-").pop()}`;
+  const customerSession = await getCustomerSession();
 
   const ticket: Ticket = {
     id: nanoid(),
@@ -115,6 +117,7 @@ export async function POST(req: NextRequest) {
     status: "pending",
     isDuplicate: false,
     submittedAt: new Date().toISOString(),
+    customerId: customerSession?.customerId,
   };
 
   db.data!.tickets.unshift(ticket);
