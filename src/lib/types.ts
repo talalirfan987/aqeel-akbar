@@ -30,6 +30,8 @@ export interface Ticket {
   status: TicketStatus;
   adminNotes?: string;
   isDuplicate: boolean;
+  isWinner?: boolean;
+  prize?: string;
   submittedAt: string;
   verifiedAt?: string;
   verifiedBy?: string;
@@ -66,10 +68,34 @@ export interface AuditLog {
 export interface Notification {
   id: string;
   referenceId: string;
-  type: "submitted" | "verified" | "rejected" | "cancelled";
+  type: "submitted" | "verified" | "rejected" | "cancelled" | "message";
   message: string;
   timestamp: string;
   read: boolean;
+}
+
+// A manually-announced bulk draw result (e.g. a "Winners List" poster) — independent of
+// individual ticket submissions/verification on this platform.
+export interface WinnerEntry {
+  id: string;
+  listTitle: string; // e.g. "Winners List 2"
+  listDate: string; // ISO date the list was announced
+  srNo: number;
+  name: string;
+  address: string;
+  prize: string; // e.g. "United 125cc", "Axio (Silver)"
+  createdAt: string;
+}
+
+// A single message in the chat thread attached to a ticket, between the customer and the admin.
+export interface TicketMessage {
+  id: string;
+  ticketId: string;
+  referenceId: string;
+  sender: "admin" | "customer";
+  senderName: string;
+  text: string;
+  timestamp: string;
 }
 
 export interface DbShape {
@@ -79,4 +105,6 @@ export interface DbShape {
   customers: Customer[];
   auditLogs: AuditLog[];
   notifications: Notification[];
+  winnerEntries: WinnerEntry[];
+  messages: TicketMessage[];
 }
