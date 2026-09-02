@@ -40,7 +40,7 @@ export default function AuditLogsPage() {
                   <tr key={l.id} className="border-t border-slate-100">
                     <td className="px-4 py-3 font-medium text-slate-900">{l.adminUsername}</td>
                     <td className="px-4 py-3 text-slate-700">{l.action}{l.details ? ` — ${l.details}` : ""}</td>
-                    <td className="px-4 py-3 text-blue-600">{l.referenceId || "—"}</td>
+                    <td className="px-4 py-3 text-amber-600">{l.referenceId || "—"}</td>
                     <td className="px-4 py-3 text-slate-500">
                       {l.previousStatus && l.newStatus && l.previousStatus !== l.newStatus
                         ? `${l.previousStatus} → ${l.newStatus}`

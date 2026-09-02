@@ -35,7 +35,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Total Tickets" value={stats?.total ?? "—"} icon="🎟️" accent="blue" />
+        <StatCard label="Total Tickets" value={stats?.total ?? "—"} icon="🎟️" accent="gold" />
         <StatCard label="Pending Verification" value={stats?.pending ?? "—"} icon="⏳" accent="amber" />
         <StatCard label="Verified Tickets" value={stats?.verified ?? "—"} icon="✅" accent="emerald" />
         <StatCard label="Rejected Tickets" value={stats?.rejected ?? "—"} icon="❌" accent="red" />
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900">Recent Submissions</h2>
-          <Link href="/admin/tickets" className="text-xs font-medium text-blue-600 hover:underline">
+          <Link href="/admin/tickets" className="text-xs font-medium text-amber-600 hover:underline">
             View all →
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
               {recent.map((t) => (
                 <tr key={t.id} className="border-b border-slate-50 last:border-0">
                   <td className="py-2.5">
-                    <Link href={`/admin/tickets/${t.id}`} className="font-medium text-blue-600 hover:underline">
+                    <Link href={`/admin/tickets/${t.id}`} className="font-medium text-amber-600 hover:underline">
                       {t.referenceId}
                     </Link>
                   </td>

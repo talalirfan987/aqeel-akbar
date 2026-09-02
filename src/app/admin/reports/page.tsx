@@ -44,7 +44,7 @@ export default function ReportsPage() {
           <h1 className="text-xl font-bold text-slate-900">Reports</h1>
           <p className="text-sm text-slate-500">Generate summary reports across ticket submissions.</p>
         </div>
-        <a href="/api/tickets/export" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600">
+        <a href="/api/tickets/export" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-amber-300 hover:text-amber-600">
           ⬇ Export All Tickets (CSV)
         </a>
       </div>
@@ -55,7 +55,7 @@ export default function ReportsPage() {
             key={r.value}
             onClick={() => setType(r.value)}
             className={`rounded-full px-4 py-2 text-xs font-semibold cursor-pointer ${
-              type === r.value ? "bg-blue-600 text-white" : "border border-slate-200 bg-white text-slate-600"
+              type === r.value ? "bg-amber-600 text-white" : "border border-slate-200 bg-white text-slate-600"
             }`}
           >
             {r.label}

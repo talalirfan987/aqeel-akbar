@@ -74,7 +74,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div className="flex items-center gap-2 text-sm">
-        <Link href="/admin/tickets" className="text-blue-600 hover:underline">
+        <Link href="/admin/tickets" className="text-amber-600 hover:underline">
           ← Back to Tickets
         </Link>
       </div>
@@ -158,7 +158,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               // eslint-disable-next-line @next/next/no-img-element
               <img src={ticket.ticketImage} alt="Ticket receipt" className="max-h-80 rounded-xl border border-slate-200 object-contain" />
             ) : (
-              <a href={ticket.ticketImage} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm text-blue-600">
+              <a href={ticket.ticketImage} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm text-amber-600">
                 📄 View PDF ({ticket.ticketImageName})
               </a>
             )
@@ -174,14 +174,14 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Internal notes (visible to admins only, except on rejection)…"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
           />
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
           {editing ? (
             <>
-              <button disabled={busy} onClick={() => act("edit", edit)} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer">
+              <button disabled={busy} onClick={() => act("edit", edit)} className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer">
                 Save Changes
               </button>
               <button onClick={() => setEditing(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 cursor-pointer">
@@ -251,7 +251,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
   );
 }
 
-const fieldCls = "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400";
+const fieldCls = "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-amber-400";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -307,8 +307,8 @@ function DigitalReceipt({ ticket }: { ticket: Ticket }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 className="mb-4 text-sm font-bold text-slate-900">Digital Receipt</h2>
-      <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/50 p-5 text-sm">
-        <p className="text-center text-xs font-semibold uppercase tracking-wide text-blue-700">
+      <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/50 p-5 text-sm">
+        <p className="text-center text-xs font-semibold uppercase tracking-wide text-amber-700">
           Balochistan Lottery Management System
         </p>
         <div className="mt-4 space-y-1.5">

@@ -43,7 +43,7 @@ export default function DrawsPage() {
           <h1 className="text-xl font-bold text-slate-900">Draws</h1>
           <p className="text-sm text-slate-500">Manage the lottery draws customers can select when submitting tickets.</p>
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer">
+        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 cursor-pointer">
           {showForm ? "Close" : "+ New Draw"}
         </button>
       </div>

@@ -36,12 +36,21 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen flex-1 items-center justify-center bg-slate-900 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-950 p-8 shadow-xl">
+    <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-slate-950 px-4">
+      {/* Luxury showroom backdrop image */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-cover bg-top"
+        style={{ backgroundImage: "url('/images/login-bg.jpg')" }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-slate-950/40" />
+
+      <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/20 bg-slate-950/80 p-8 shadow-[0_0_60px_rgba(217,161,58,0.08)] backdrop-blur">
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white font-bold">BL</span>
+          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 font-bold text-slate-900 shadow-[0_0_20px_rgba(217,161,58,0.35)]">
+            BL
+          </span>
           <h1 className="text-lg font-bold text-white">Admin Dashboard</h1>
-          <p className="mt-1 text-xs text-slate-400">Balochistan Lottery Management System</p>
+          <p className="mt-1 text-xs text-amber-200/50">Balochistan Lottery Management System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -50,7 +59,7 @@ function LoginForm() {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-amber-500"
               placeholder="admin"
               autoFocus
             />
@@ -61,7 +70,7 @@ function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white outline-none focus:border-amber-500"
               placeholder="••••••••"
             />
           </div>
@@ -69,7 +78,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+            className="w-full rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-4 py-3 text-sm font-semibold text-slate-900 hover:from-amber-400 hover:to-amber-600 disabled:opacity-60 cursor-pointer"
           >
             {loading ? "Signing in…" : "Sign In"}
           </button>

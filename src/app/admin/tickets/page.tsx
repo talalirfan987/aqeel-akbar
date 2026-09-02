@@ -39,7 +39,7 @@ export default function AdminTicketsPage() {
         </div>
         <a
           href="/api/tickets/export"
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-amber-300 hover:text-amber-600"
         >
           ⬇ Export CSV
         </a>
@@ -50,12 +50,12 @@ export default function AdminTicketsPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by reference ID, ticket #, name, or phone…"
-          className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
         >
           <option value="">All Statuses</option>
           <option value="pending">Pending Verification</option>
@@ -66,7 +66,7 @@ export default function AdminTicketsPage() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+          className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-amber-400"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -108,7 +108,7 @@ export default function AdminTicketsPage() {
               {!loading &&
                 tickets.map((t) => (
                   <tr key={t.id} className="border-t border-slate-100 hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-blue-600">
+                    <td className="px-4 py-3 font-medium text-amber-600">
                       {t.referenceId}
                       {t.isDuplicate && (
                         <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
@@ -125,7 +125,7 @@ export default function AdminTicketsPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-500">{new Date(t.submittedAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/tickets/${t.id}`} className="font-medium text-blue-600 hover:underline">
+                      <Link href={`/admin/tickets/${t.id}`} className="font-medium text-amber-600 hover:underline">
                         View
                       </Link>
                     </td>
