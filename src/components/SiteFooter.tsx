@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "./Logo";
 
 export default function SiteFooter() {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/account/login") || pathname?.startsWith("/account/signup")) return null;
 
   return (
     <footer className="mt-auto border-t border-amber-500/10 bg-slate-950">
@@ -13,10 +15,8 @@ export default function SiteFooter() {
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <div className="mb-2 flex items-center gap-2 font-semibold text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-xs text-slate-900">
-                BL
-              </span>
-              Balochistan Lottery Management System
+              <Logo className="h-8 w-8 shrink-0" />
+              Akeel Akbar Lottery Management System
             </div>
             <p className="text-sm text-slate-400">
               A digital record-management platform for submitting and tracking lottery ticket records.
@@ -46,7 +46,7 @@ export default function SiteFooter() {
             Participation may be subject to applicable provincial regulations and age restrictions (18+ where applicable).
             This platform is a record-management tool only and does not itself conduct or officiate draws.
           </p>
-          <p>© {new Date().getFullYear()} Balochistan Lottery Management System. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Akeel Akbar Lottery Management System. All rights reserved.</p>
         </div>
       </div>
     </footer>

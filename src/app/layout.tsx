@@ -16,8 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Balochistan Lottery Management System",
+  title: {
+    default: "Akeel Akbar Lottery",
+    template: "%s · Akeel Akbar Lottery",
+  },
   description: "Submit, verify, and manage your lottery ticket records securely and easily.",
+  openGraph: {
+    title: "Akeel Akbar Lottery",
+    description: "Submit, verify, and manage your lottery ticket records securely and easily.",
+    siteName: "Akeel Akbar Lottery",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
