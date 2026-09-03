@@ -166,12 +166,25 @@ export default function SubmitTicketPage() {
 
         <Stepper step={step} />
 
+        {draws.length === 0 && (
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-2xl text-red-600 mb-3">
+              🔒
+            </div>
+            <h2 className="text-lg font-bold text-red-900">Submissions Currently Closed</h2>
+            <p className="mt-1 text-sm text-red-700">
+              The deadline for current draw submissions has ended or no active draw is open right now. Please wait for the next draw announcement.
+            </p>
+          </div>
+        )}
+
         <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
           {step === 0 && (
             <div className="space-y-5">
               <h2 className="text-lg font-semibold text-slate-900">{steps[0]}</h2>
               <Field label="Lottery / Draw" error={errors.drawId} required>
                 <select
+                  disabled={draws.length === 0}
                   className={inputCls(!!errors.drawId)}
                   value={form.drawId}
                   onChange={(e) => {
@@ -190,7 +203,7 @@ export default function SubmitTicketPage() {
                     </option>
                   ))}
                 </select>
-                {draws.length === 0 && <p className="mt-1 text-xs text-slate-400">Loading available draws…</p>}
+                {draws.length === 0 && <p className="mt-1 text-xs text-red-500 font-medium">No active draw open for submission.</p>}
               </Field>
               <Field label="Number of Tickets" error={errors.quantity} required>
                 <input
@@ -389,15 +402,16 @@ export default function SubmitTicketPage() {
             {step < steps.length - 1 ? (
               <button
                 onClick={next}
-                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 cursor-pointer"
+                disabled={draws.length === 0}
+                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Continue
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-60 cursor-pointer"
+                disabled={submitting || draws.length === 0}
+                className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {submitting ? "Submitting…" : "Submit Ticket"}
               </button>
