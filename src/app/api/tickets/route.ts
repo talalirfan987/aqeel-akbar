@@ -89,6 +89,9 @@ export async function POST(req: NextRequest) {
   const db = await getDb();
   const draw = db.data!.draws.find((d) => d.id === data.drawId);
   if (!draw) return NextResponse.json({ error: "Selected draw was not found" }, { status: 400 });
+  if (!draw.active || (typeof draw.timerEndMs === "number" && draw.timerEndMs <= Date.now())) {
+    return NextResponse.json({ error: "Submissions for this draw are currently closed. The timer has ended." }, { status: 400 });
+  }
   if (data.amount !== draw.ticketPrice * data.quantity) {
     return NextResponse.json({ error: "Amount does not match the selected draw's ticket price" }, { status: 400 });
   }
