@@ -94,11 +94,23 @@ function StatusContent() {
         )}
 
         {ticket && (
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Reference ID</p>
-                <p className="text-lg font-bold text-slate-900">{ticket.referenceId}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Reference ID</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-xl font-black text-slate-900 font-mono">{ticket.referenceId}</p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(ticket.referenceId);
+                      alert("Reference ID copied to clipboard!");
+                    }}
+                    title="Copy Reference ID"
+                    className="rounded-lg bg-amber-500/10 px-2 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/20 transition-all cursor-pointer"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
               </div>
               <StatusBadge status={ticket.status} />
             </div>
@@ -113,13 +125,25 @@ function StatusContent() {
             </dl>
 
             {ticket.status === "rejected" && ticket.adminNotes && (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
-                <strong className="block mb-0.5">Note from operator:</strong>
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+                <strong className="block mb-1 text-sm font-bold text-red-800">⚠️ Note from operator:</strong>
                 {ticket.adminNotes}
               </div>
             )}
 
             <Timeline status={ticket.status} />
+
+            <div className="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between">
+              <span className="text-xs text-slate-500">Need help with this ticket?</span>
+              <a
+                href={`https://wa.me/923000000000?text=Hello,%20I%20have%20a%20question%20about%20my%20ticket%20${ticket.referenceId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 shadow-md transition-all flex items-center gap-1.5"
+              >
+                💬 Ask Operator on WhatsApp
+              </a>
+            </div>
           </div>
         )}
       </div>
