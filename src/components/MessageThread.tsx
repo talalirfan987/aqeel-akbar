@@ -54,7 +54,7 @@ export default function MessageThread({
     const res = await fetch(`/api/tickets/${ticketId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text.trim() }),
+      body: JSON.stringify({ text: text.trim(), senderRole: viewerRole }),
     });
     const data = await res.json();
     setSending(false);
@@ -95,13 +95,15 @@ export default function MessageThread({
           return (
             <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                  isAdmin ? "bg-orange-500 text-white" : "bg-black text-white"
+                className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${
+                  isAdmin
+                    ? "bg-orange-500 text-white font-medium"
+                    : "bg-black text-white border border-zinc-800 font-medium"
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                <p className="mt-1 text-[10px] text-white/60">
-                  {m.sender === "admin" ? "Operator" : m.senderName} ·{" "}
+                <p className="mt-1 text-[10px] text-white/70 font-normal">
+                  {isAdmin ? "Admin / Operator" : m.senderName} ·{" "}
                   {new Date(m.timestamp).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
