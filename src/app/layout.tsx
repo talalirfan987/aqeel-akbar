@@ -4,6 +4,8 @@ import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import FloatingSupport from "@/components/FloatingSupport";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,11 +37,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 pb-16 md:pb-0">
         <I18nProvider>
           <SiteHeader />
           <div className="flex-1 flex flex-col">{children}</div>
           <SiteFooter />
+          <FloatingSupport />
+          <MobileBottomNav />
         </I18nProvider>
       </body>
     </html>
