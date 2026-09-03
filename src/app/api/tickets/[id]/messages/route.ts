@@ -7,18 +7,8 @@ import { getCustomerSession } from "@/lib/customerAuth";
 
 const sendSchema = z.object({
   text: z.string().trim().min(1).max(1000),
+  senderRole: z.enum(["admin", "customer"]).optional(),
 });
-
-async function resolveSender(ticketCustomerId: string | undefined) {
-  const admin = await getSession();
-  if (admin) return { sender: "admin" as const, senderName: admin.name || admin.username };
-
-  const customer = await getCustomerSession();
-  if (customer && ticketCustomerId && customer.customerId === ticketCustomerId) {
-    return { sender: "customer" as const, senderName: customer.name };
-  }
-  return null;
-}
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -26,8 +16,11 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
   const ticket = db.data!.tickets.find((t) => t.id === id);
   if (!ticket) return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
 
-  const who = await resolveSender(ticket.customerId);
-  if (!who) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getSession();
+  const customer = await getCustomerSession();
+  if (!admin && !customer) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const messages = db.data!.messages
     .filter((m) => m.ticketId === ticket.id)
@@ -42,8 +35,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const ticket = db.data!.tickets.find((t) => t.id === id);
   if (!ticket) return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
 
-  const who = await resolveSender(ticket.customerId);
-  if (!who) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getSession();
+  const customer = await getCustomerSession();
+
+  if (!admin && !customer) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = sendSchema.safeParse(body);
@@ -51,24 +48,42 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: "Please enter a message." }, { status: 400 });
   }
 
+  const { text, senderRole } = parsed.data;
+
+  let sender: "admin" | "customer" = "customer";
+  let senderName = ticket.customerName;
+
+  if (senderRole === "admin" && admin) {
+    sender = "admin";
+    senderName = admin.name || admin.username || "Operator";
+  } else if (senderRole === "customer") {
+    sender = "customer";
+    senderName = customer?.name || ticket.customerName;
+  } else if (admin && !customer) {
+    sender = "admin";
+    senderName = admin.name || admin.username || "Operator";
+  } else if (customer) {
+    sender = "customer";
+    senderName = customer.name || ticket.customerName;
+  }
+
   const message = {
     id: nanoid(),
     ticketId: ticket.id,
     referenceId: ticket.referenceId,
-    sender: who.sender,
-    senderName: who.senderName,
-    text: parsed.data.text,
+    sender,
+    senderName,
+    text,
     timestamp: new Date().toISOString(),
   };
   db.data!.messages.push(message);
 
-  // Let the other side know a new message has arrived.
-  if (who.sender === "customer") {
+  if (sender === "customer") {
     db.data!.notifications.unshift({
       id: nanoid(),
       referenceId: ticket.referenceId,
       type: "message",
-      message: `New reply from ${who.senderName} on ticket ${ticket.referenceId}.`,
+      message: `New reply from ${senderName} on ticket ${ticket.referenceId}.`,
       timestamp: new Date().toISOString(),
       read: false,
     });
