@@ -6,6 +6,7 @@ export interface Draw {
   drawDate: string; // ISO date
   ticketPrice: number;
   active: boolean;
+  timerEndMs?: number;
 }
 
 export type PaymentMethod = "jazzcash" | "easypaisa";
