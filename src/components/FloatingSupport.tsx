@@ -42,7 +42,7 @@ export default function FloatingSupport() {
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 rounded-xl bg-emerald-600/90 px-3.5 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500 shadow-md"
             >
-              <span className="text-base">💬</span> WhatsApp Support
+              WhatsApp Support
             </a>
 
             <Link
@@ -50,7 +50,7 @@ export default function FloatingSupport() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 rounded-xl border border-amber-400/30 bg-white/5 px-3.5 py-2 text-xs font-medium text-amber-200 transition-all hover:bg-white/10"
             >
-              <span className="text-base">📧</span> Contact Form
+              Contact Form
             </Link>
 
             <Link
@@ -58,7 +58,7 @@ export default function FloatingSupport() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-900/60 px-3.5 py-2 text-xs font-medium text-slate-200 transition-all hover:border-amber-400/40"
             >
-              <span className="text-base">🔎</span> Quick Track Ticket
+              Quick Track Ticket
             </Link>
           </div>
         </div>
@@ -69,8 +69,7 @@ export default function FloatingSupport() {
         className="group relative flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 text-slate-950 font-bold shadow-xl shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         aria-label="Support chat"
       >
-        <span className="text-lg">💬</span>
-        <span className="hidden text-xs font-extrabold uppercase tracking-wide md:inline">Support</span>
+        <span className="text-xs font-extrabold uppercase tracking-wide">Support</span>
         <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-slate-950"></span>

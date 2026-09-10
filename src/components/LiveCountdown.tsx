@@ -86,11 +86,11 @@ export default function LiveCountdown({ onOpenPopup }: { onOpenPopup?: () => voi
           <div className="flex items-center gap-2">
             {isEnded ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400 border border-red-500/30">
-                🔒 Submissions Closed
+                Submissions Closed
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/30">
-                🔥 {timeLeft.minutes > 0 ? `${timeLeft.minutes} Mins Live Timer` : "Live Draw Countdown"}
+                {timeLeft.minutes > 0 ? `${timeLeft.minutes} Mins Live Timer` : "Live Draw Countdown"}
               </span>
             )}
             <span className="text-xs text-slate-400">Monthly Bumper Draw</span>
@@ -133,7 +133,7 @@ export default function LiveCountdown({ onOpenPopup }: { onOpenPopup?: () => voi
               disabled
               className="block w-full text-center rounded-2xl bg-zinc-800 border border-zinc-700 px-6 py-3.5 text-sm font-bold text-zinc-400 cursor-not-allowed opacity-80"
             >
-              🔒 Submissions Closed
+              Submissions Closed
             </button>
           ) : onOpenPopup ? (
             <button

@@ -7,17 +7,12 @@ import { useI18n } from "@/lib/i18n";
 import LiveCountdown from "@/components/LiveCountdown";
 import type { Draw } from "@/lib/types";
 
-const steps = [
-  { key: "step1" as const, icon: "📝" },
-  { key: "step2" as const, icon: "🎟️" },
-  { key: "step3" as const, icon: "🔑" },
-  { key: "step4" as const, icon: "📊" },
-];
+const steps = [{ key: "step1" as const }, { key: "step2" as const }, { key: "step3" as const }, { key: "step4" as const }];
 
 const features = [
-  { icon: "🔒", title: "Secure by design", body: "Server-side validation, secure file uploads, and role-based admin access protect every record." },
-  { icon: "🔎", title: "Transparent tracking", body: "Every ticket gets a unique reference ID so you can track its verification status at any time." },
-  { icon: "🛡️", title: "Full audit trail", body: "Every admin action — verify, reject, edit, cancel — is logged for accountability." },
+  { title: "Secure by design", body: "Server-side validation, secure file uploads, and role-based admin access protect every record." },
+  { title: "Transparent tracking", body: "Every ticket gets a unique reference ID so you can track its verification status at any time." },
+  { title: "Full audit trail", body: "Every admin action — verify, reject, edit, cancel — is logged for accountability." },
 ];
 
 interface WinnerPreview {
@@ -86,13 +81,12 @@ export default function Home() {
             {/* Quick Track Input Bar */}
             <form onSubmit={handleQuickSearch} className="mt-8 mx-auto max-w-xl">
               <div className="relative flex items-center rounded-2xl border border-amber-400/30 bg-white/10 p-2 shadow-2xl backdrop-blur-xl transition-all focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/30">
-                <span className="pl-3 text-slate-400">🔎</span>
                 <input
                   type="text"
                   value={quickRef}
                   onChange={(e) => setQuickRef(e.target.value)}
                   placeholder="Enter Reference ID (e.g. BLM-2026-000012) or Phone"
-                  className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-slate-400 outline-none font-mono"
+                  className="w-full bg-transparent px-3.5 py-2.5 text-sm text-white placeholder-slate-400 outline-none font-mono"
                 />
                 <button
                   type="submit"
@@ -108,14 +102,14 @@ export default function Home() {
                 onClick={() => setShowSubmitPopup(true)}
                 className="w-full rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 px-8 py-4 text-center text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-xl shadow-amber-500/25 transition-all hover:scale-105 sm:w-auto cursor-pointer"
               >
-                🎟️ {t("submitTicket")}
+                {t("submitTicket")}
               </button>
 
               <Link
                 href="/status"
                 className="w-full rounded-2xl border border-amber-400/30 bg-white/5 px-8 py-4 text-center text-sm font-bold text-amber-100 backdrop-blur-md transition-all hover:border-amber-400/60 hover:bg-white/10 sm:w-auto"
               >
-                📊 {t("checkStatus")}
+                {t("checkStatus")}
               </Link>
             </div>
 
@@ -145,15 +139,10 @@ export default function Home() {
               key={s.key}
               className="group relative flex h-full flex-col items-center rounded-3xl border border-amber-400/20 bg-white/5 p-6 text-center shadow-xl backdrop-blur-md transition-all hover:-translate-y-1.5 hover:border-amber-400/60 hover:bg-white/10"
             >
-              <div className="relative z-10 mx-auto mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-2xl ring-4 ring-slate-950 shadow-lg transition-transform group-hover:scale-110">
-                {s.icon}
-              </div>
-              <div className="mb-2 flex items-center justify-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-slate-950">
-                  {i + 1}
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wide text-amber-400">Step {i + 1}</span>
-              </div>
+              <span className="mx-auto mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-xl font-black text-slate-950 ring-4 ring-slate-950 shadow-lg transition-transform group-hover:scale-110">
+                {i + 1}
+              </span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-wide text-amber-400">Step {i + 1}</span>
               <p className="text-sm font-semibold text-slate-200">{t(s.key)}</p>
             </div>
           ))}
@@ -168,9 +157,6 @@ export default function Home() {
               key={c.title}
               className="group rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-md transition-all hover:-translate-y-1 hover:border-amber-400/40 hover:bg-slate-900/90 shadow-xl"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-400/20 text-2xl text-amber-400 transition-transform group-hover:scale-110">
-                {c.icon}
-              </div>
               <h3 className="mb-2 text-base font-bold text-white">{c.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{c.body}</p>
             </div>
@@ -186,7 +172,7 @@ export default function Home() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">Verifiable Results</span>
-                <h2 className="mt-1 text-2xl font-black text-white sm:text-4xl">🏆 Recent Lucky Draw Winners</h2>
+                <h2 className="mt-1 text-2xl font-black text-white sm:text-4xl">Recent Lucky Draw Winners</h2>
                 <p className="mt-1 text-sm text-slate-400">Real verified participants announced out in the open.</p>
               </div>
               <Link href="/winners" className="text-xs font-extrabold uppercase tracking-wide text-amber-400 hover:text-amber-300 flex items-center gap-1">
@@ -199,12 +185,9 @@ export default function Home() {
                   key={w.srNo}
                   className="rounded-3xl border border-amber-400/20 bg-white/5 p-6 backdrop-blur-md transition-all hover:border-amber-400/50 hover:bg-white/10 shadow-xl"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-amber-400 border border-amber-400/30">
-                      Winner #{w.srNo}
-                    </span>
-                    <span className="text-lg">🥇</span>
-                  </div>
+                  <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-amber-400 border border-amber-400/30">
+                    Winner #{w.srNo}
+                  </span>
                   <p className="mt-3 text-lg font-black text-white">{w.name}</p>
                   <p className="text-xs text-slate-400">{w.address}</p>
                   <div className="mt-4 border-t border-white/10 pt-3 flex items-center justify-between">
@@ -221,7 +204,7 @@ export default function Home() {
       {/* Notice Section */}
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div className="rounded-3xl border border-amber-400/30 bg-amber-500/10 p-6 backdrop-blur-md text-sm text-amber-200">
-          <strong className="block mb-1 text-base font-bold text-amber-300">⚠️ Important Portal Notice</strong>
+          <strong className="block mb-1 text-base font-bold text-amber-300">Important Portal Notice</strong>
           This portal digitizes ticket record-keeping, status tracking, and customer support verification only. It does not conduct draws, guarantee any winning outcome, or make claims. Participation may be subject to provincial regulations.
         </div>
       </section>
@@ -237,28 +220,19 @@ export default function Home() {
               ✕
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-2xl ${
-                isClosed
-                  ? "bg-red-500/20 border-red-400/30 text-red-400"
-                  : "bg-amber-500/20 border-amber-400/30 text-amber-400"
-              }`}>
-                {isClosed ? "🔒" : "🎟️"}
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-white">
-                  {isClosed ? "Submissions Closed Notice" : "Ticket Submission Verification"}
-                </h3>
-                <p className={`text-xs font-bold uppercase tracking-wider ${isClosed ? "text-red-400" : "text-amber-400"}`}>
-                  {isClosed ? "Draw Submissions Ended" : "Official Guidelines & Rules"}
-                </p>
-              </div>
+            <div>
+              <h3 className="text-xl font-black text-white">
+                {isClosed ? "Submissions Closed Notice" : "Ticket Submission Verification"}
+              </h3>
+              <p className={`text-xs font-bold uppercase tracking-wider ${isClosed ? "text-red-400" : "text-amber-400"}`}>
+                {isClosed ? "Draw Submissions Ended" : "Official Guidelines & Rules"}
+              </p>
             </div>
 
             {isClosed ? (
               <div className="rounded-2xl border border-red-500/30 bg-red-950/40 p-5 space-y-2 text-sm text-red-200">
                 <strong className="block text-base font-extrabold text-red-400">
-                  ⚠️ Submissions Currently Closed
+                  Submissions Currently Closed
                 </strong>
                 <p className="text-xs text-red-300 leading-relaxed">
                   Ticket submissions for this draw have officially ended. You cannot submit or purchase a ticket at this time. Please wait for the next draw announcement.

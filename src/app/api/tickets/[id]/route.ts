@@ -100,7 +100,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       if (input.adminNotes) ticket.adminNotes = input.adminNotes;
       log(`Admin verified ticket ${ticket.referenceId}`);
       notify("verified", "Your ticket has been verified.");
-      postMessage(input.adminNotes ? `Your ticket has been verified. ${input.adminNotes}` : "Your ticket has been verified. ✅");
+      postMessage(input.adminNotes ? `Your ticket has been verified. ${input.adminNotes}` : "Your ticket has been verified.");
       break;
     }
     case "reject": {

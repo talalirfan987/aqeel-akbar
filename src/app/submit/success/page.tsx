@@ -20,7 +20,11 @@ function SuccessContent() {
   return (
     <main className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-16">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-3xl">✅</div>
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </div>
         <h1 className="text-xl font-bold text-slate-900">Your ticket has been submitted successfully.</h1>
         <p className="mt-2 text-sm text-slate-500">Keep this reference ID safe — you&apos;ll need it to track your ticket status.</p>
 

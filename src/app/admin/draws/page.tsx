@@ -198,7 +198,7 @@ function DrawCard({
               : "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
           }`}
         >
-          {isBusy ? "Updating…" : draw.active ? "🔒 Close Submissions" : "🔓 Open Submissions"}
+          {isBusy ? "Updating…" : draw.active ? "Close Submissions" : "Open Submissions"}
         </button>
       </div>
 
@@ -206,7 +206,7 @@ function DrawCard({
       <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-xs font-extrabold uppercase tracking-wide text-amber-900 flex items-center gap-1">
-            ⏱️ Configure Live Countdown Timer
+            Configure Live Countdown Timer
           </span>
           {hasTimer ? (
             <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
@@ -277,7 +277,7 @@ function DrawCard({
           onClick={handleSetCustomTimer}
           className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 shadow-md hover:scale-[1.01] transition active:scale-95 cursor-pointer disabled:opacity-50"
         >
-          {isBusy ? "Saving Timer…" : "💾 Save & Set Live Timer"}
+          {isBusy ? "Saving Timer…" : "Save & Set Live Timer"}
         </button>
 
         {/* Quick Presets */}
@@ -285,10 +285,10 @@ function DrawCard({
           <span className="text-[11px] font-bold text-amber-900">Quick Presets:</span>
           <div className="flex flex-wrap gap-1.5">
             {[
-              { label: "⚡ 5 Mins", mins: 5 },
-              { label: "⏰ 15 Mins", mins: 15 },
-              { label: "⌛ 1 Hour", mins: 60 },
-              { label: "📅 1 Day", mins: 1440 },
+              { label: "5 Mins", mins: 5 },
+              { label: "15 Mins", mins: 15 },
+              { label: "1 Hour", mins: 60 },
+              { label: "1 Day", mins: 1440 },
             ].map((p) => (
               <button
                 key={p.mins}

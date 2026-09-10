@@ -18,14 +18,14 @@ interface Stats {
   verifiedAmount: number;
 }
 
-function activityIcon(action: string) {
+function activityColor(action: string) {
   const a = action.toLowerCase();
-  if (a.includes("verified") || a.includes("winner")) return "✅";
-  if (a.includes("rejected")) return "❌";
-  if (a.includes("cancelled")) return "🚫";
-  if (a.includes("duplicate")) return "⚠️";
-  if (a.includes("edited") || a.includes("cleared")) return "✏️";
-  return "📝";
+  if (a.includes("verified") || a.includes("winner")) return "bg-emerald-500";
+  if (a.includes("rejected")) return "bg-red-500";
+  if (a.includes("cancelled")) return "bg-slate-400";
+  if (a.includes("duplicate")) return "bg-amber-500";
+  if (a.includes("edited") || a.includes("cleared")) return "bg-blue-500";
+  return "bg-slate-300";
 }
 
 function useClock() {
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-slate-900 to-slate-950 px-5 py-4 text-white shadow-sm">
         <div>
           <h1 className="text-xl font-bold">Dashboard</h1>
-          <p className="text-sm text-amber-200/60">Everything happening across Akeel Akbar Lottery, at a glance.</p>
+          <p className="text-sm text-amber-200/60">Everything happening across Lucky Lottery, at a glance.</p>
         </div>
         {now && (
           <div className="text-right">
@@ -70,12 +70,12 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Total Tickets" value={stats?.total ?? "—"} icon="🎟️" accent="gold" />
-        <StatCard label="Pending Verification" value={stats?.pending ?? "—"} icon="⏳" accent="amber" />
-        <StatCard label="Verified Tickets" value={stats?.verified ?? "—"} icon="✅" accent="emerald" />
-        <StatCard label="Rejected Tickets" value={stats?.rejected ?? "—"} icon="❌" accent="red" />
-        <StatCard label="Today's Submissions" value={stats?.today ?? "—"} icon="📅" accent="purple" />
-        <StatCard label="Duplicate Tickets" value={stats?.duplicates ?? "—"} icon="⚠️" accent="slate" />
+        <StatCard label="Total Tickets" value={stats?.total ?? "—"} accent="gold" />
+        <StatCard label="Pending Verification" value={stats?.pending ?? "—"} accent="amber" />
+        <StatCard label="Verified Tickets" value={stats?.verified ?? "—"} accent="emerald" />
+        <StatCard label="Rejected Tickets" value={stats?.rejected ?? "—"} accent="red" />
+        <StatCard label="Today's Submissions" value={stats?.today ?? "—"} accent="purple" />
+        <StatCard label="Duplicate Tickets" value={stats?.duplicates ?? "—"} accent="slate" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -152,9 +152,7 @@ export default function AdminDashboard() {
         <div className="space-y-3">
           {activity.map((log) => (
             <div key={log.id} className="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0 last:pb-0">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm">
-                {activityIcon(log.action)}
-              </span>
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${activityColor(log.action)}`} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-slate-800">{log.action}</p>
                 {log.details && <p className="truncate text-xs text-slate-400">{log.details}</p>}

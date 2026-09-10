@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/", label: "Home", icon: "🏠" },
-  { href: "/submit", label: "Submit", icon: "🎟️" },
-  { href: "/status", label: "Track", icon: "🔎" },
-  { href: "/winners", label: "Winners", icon: "🏆" },
-  { href: "/account", label: "Account", icon: "👤" },
+  { href: "/", label: "Home" },
+  { href: "/submit", label: "Submit" },
+  { href: "/status", label: "Track" },
+  { href: "/winners", label: "Winners" },
+  { href: "/account", label: "Account" },
 ];
 
 export default function MobileBottomNav() {
@@ -28,14 +28,13 @@ export default function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center rounded-xl py-1.5 transition-all ${
+              className={`flex flex-col items-center justify-center rounded-xl py-2.5 transition-all ${
                 active
                   ? "bg-amber-500/15 text-amber-400 font-bold"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <span className="text-lg leading-none">{item.icon}</span>
-              <span className="mt-1 text-[10px] tracking-tight">{item.label}</span>
+              <span className="text-xs tracking-tight">{item.label}</span>
             </Link>
           );
         })}

@@ -76,7 +76,7 @@ export default function MessageThread({
           : `rounded-2xl border p-4 ${dark ? "border-amber-400/20 bg-white/5" : "border-slate-200 bg-white"}`
       }
     >
-      {!bare && <h2 className={`mb-3 text-sm font-bold ${dark ? "text-white" : "text-slate-900"}`}>💬 Messages</h2>}
+      {!bare && <h2 className={`mb-3 text-sm font-bold ${dark ? "text-white" : "text-slate-900"}`}>Messages</h2>}
 
       <div
         className={`space-y-2 overflow-y-auto rounded-xl p-3 ${bare ? "flex-1" : "max-h-80"} ${
