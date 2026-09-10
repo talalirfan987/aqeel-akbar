@@ -11,6 +11,16 @@ export interface Draw {
 
 export type PaymentMethod = "jazzcash" | "easypaisa";
 
+// When a single submission's tickets are split across multiple people (e.g. someone
+// buying 10 tickets divides them as 4 for one person, 2 for another, 4 for a third),
+// this records who each portion belongs to. The quantities always sum to the parent
+// Ticket's `quantity`.
+export interface TicketHolder {
+  name: string;
+  phone: string;
+  quantity: number;
+}
+
 export interface Ticket {
   id: string;
   referenceId: string;
@@ -31,6 +41,7 @@ export interface Ticket {
   status: TicketStatus;
   adminNotes?: string;
   isDuplicate: boolean;
+  holders?: TicketHolder[];
   isWinner?: boolean;
   prize?: string;
   submittedAt: string;

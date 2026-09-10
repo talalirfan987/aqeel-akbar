@@ -134,6 +134,23 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
                 )}
               </dl>
             )}
+            {ticket.holders && ticket.holders.length > 0 && (
+              <div className="mt-4">
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Ticket Holders ({ticket.holders.length})
+                </h3>
+                <ul className="space-y-1.5 text-sm">
+                  {ticket.holders.map((h, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-1.5">
+                      <span className="text-slate-700">
+                        {h.name} <span className="text-slate-400">· {h.phone}</span>
+                      </span>
+                      <span className="font-semibold text-slate-900">{h.quantity} ticket{h.quantity === 1 ? "" : "s"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Ticket Information</h2>
@@ -162,7 +179,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               <img src={ticket.ticketImage} alt="Ticket receipt" className="max-h-80 rounded-xl border border-slate-200 object-contain" />
             ) : (
               <a href={ticket.ticketImage} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm text-amber-600">
-                📄 View PDF ({ticket.ticketImageName})
+                View PDF ({ticket.ticketImageName})
               </a>
             )
           ) : (
@@ -196,10 +213,10 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               {ticket.status === "pending" && (
                 <>
                   <button onClick={() => setConfirmAction("verify")} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 cursor-pointer">
-                    ✓ Verify
+                    Verify
                   </button>
                   <button onClick={() => setConfirmAction("reject")} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 cursor-pointer">
-                    ✕ Reject
+                    Reject
                   </button>
                   <button onClick={() => setEditing(true)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer">
                     Edit Info
@@ -239,7 +256,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
           {ticket.isWinner ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-emerald-700">
-                🏆 Marked as a winner{ticket.prize ? ` — ${ticket.prize}` : ""}.
+                Marked as a winner{ticket.prize ? ` — ${ticket.prize}` : ""}.
               </p>
               <button
                 onClick={() => act("unmark_winner")}
@@ -350,7 +367,7 @@ function DigitalReceipt({ ticket }: { ticket: Ticket }) {
       <h2 className="mb-4 text-sm font-bold text-slate-900">Digital Receipt</h2>
       <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/50 p-5 text-sm">
         <p className="text-center text-xs font-semibold uppercase tracking-wide text-amber-700">
-          Akeel Akbar Lottery Management System
+          Lucky Lottery Management System
         </p>
         <div className="mt-4 space-y-1.5">
           <Row label="Reference ID" value={ticket.referenceId} />
@@ -364,6 +381,17 @@ function DigitalReceipt({ ticket }: { ticket: Ticket }) {
           <Row label="Verification Date" value={ticket.verifiedAt ? new Date(ticket.verifiedAt).toLocaleString() : "—"} />
           <Row label="Authorized Operator" value={ticket.verifiedBy || "—"} />
         </div>
+        {ticket.holders && ticket.holders.length > 0 && (
+          <div className="mt-4 border-t border-amber-200 pt-3">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">Ticket Holders</p>
+            {ticket.holders.map((h, i) => (
+              <div key={i} className="flex justify-between text-xs text-slate-600">
+                <span>{h.name} ({h.phone})</span>
+                <span>{h.quantity} ticket{h.quantity === 1 ? "" : "s"}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <p className="mt-4 text-center text-[11px] text-slate-500">
           Digital record — subject to verification. This receipt is issued by the platform operator only and is not
           an official government document.

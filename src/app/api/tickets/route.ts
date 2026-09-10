@@ -6,21 +6,18 @@ import { getSession } from "@/lib/auth";
 import { getCustomerSession } from "@/lib/customerAuth";
 import { isRateLimited } from "@/lib/rateLimit";
 import type { Ticket } from "@/lib/types";
+import { nameSchema, phoneSchema, citySchema, cnicSchema, ticketHolderSchema } from "@/lib/validation";
 
 const submitSchema = z.object({
-  customerName: z.string().trim().min(3, "Full name must be at least 3 characters").max(100),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^03\d{9}$/, "Enter a valid Pakistani mobile number (e.g. 03001234567)"),
-  city: z.string().trim().min(2, "Please enter your city").max(60),
-  cnic: z
-    .string()
-    .trim()
-    .regex(/^\d{5}-\d{7}-\d{1}$/, "CNIC must look like 12345-1234567-1")
-    .optional()
-    .or(z.literal("")),
+  customerName: nameSchema,
+  phone: phoneSchema,
+  city: citySchema,
+  cnic: cnicSchema,
   quantity: z.coerce.number().int().positive("Enter a valid number of tickets").default(1),
+  // Optional breakdown when the tickets in this submission belong to more than one
+  // person (e.g. 10 tickets split 4/2/4 across three names). Quantities must add up
+  // to `quantity` — checked below since that check needs both fields at once.
+  holders: z.array(ticketHolderSchema).optional(),
   drawId: z.string().min(1),
   amount: z.coerce.number().positive("Amount must be greater than 0"),
   drawDate: z.string().min(1),
@@ -95,6 +92,15 @@ export async function POST(req: NextRequest) {
   if (data.amount !== draw.ticketPrice * data.quantity) {
     return NextResponse.json({ error: "Amount does not match the selected draw's ticket price" }, { status: 400 });
   }
+  if (data.holders && data.holders.length > 0) {
+    const holderTotal = data.holders.reduce((sum, h) => sum + h.quantity, 0);
+    if (holderTotal !== data.quantity) {
+      return NextResponse.json(
+        { error: `Ticket holder quantities (${holderTotal}) must add up to the total number of tickets (${data.quantity})` },
+        { status: 400 }
+      );
+    }
+  }
 
   const referenceId = nextReferenceId(db.data!.tickets);
   const ticketNumber = `TK-${referenceId.split("-").pop()}`;
@@ -109,6 +115,7 @@ export async function POST(req: NextRequest) {
     cnic: data.cnic || undefined,
     ticketNumber,
     quantity: data.quantity,
+    holders: data.holders && data.holders.length > 0 ? data.holders : undefined,
     drawId: draw.id,
     drawName: draw.name,
     amount: data.amount,

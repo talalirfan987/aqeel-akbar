@@ -3,6 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Draw, PaymentMethod } from "@/lib/types";
+import {
+  CITY_ERROR,
+  CITY_REGEX,
+  CNIC_ERROR,
+  CNIC_REGEX,
+  NAME_ERROR,
+  NAME_REGEX,
+  PAKISTAN_DIAL_CODE,
+  PHONE_ERROR,
+  PHONE_REGEX,
+} from "@/lib/validation";
+
+type HolderRow = { name: string; phone: string; quantity: string };
 
 type FormState = {
   drawId: string;
@@ -17,6 +30,8 @@ type FormState = {
   cnic: string;
   ticketImage: string;
   ticketImageName: string;
+  splitTickets: boolean;
+  holders: HolderRow[];
 };
 
 function todayDate() {
@@ -37,13 +52,15 @@ const empty: FormState = {
   cnic: "",
   ticketImage: "",
   ticketImageName: "",
+  splitTickets: false,
+  holders: [],
 };
 
 const steps = ["Ticket & Draw", "Payment", "Your Information", "Ticket Verification", "Confirmation"];
 
-const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
-  { id: "jazzcash", label: "JazzCash", icon: "📱" },
-  { id: "easypaisa", label: "EasyPaisa", icon: "💳" },
+const paymentMethods: { id: PaymentMethod; label: string }[] = [
+  { id: "jazzcash", label: "JazzCash" },
+  { id: "easypaisa", label: "EasyPaisa" },
 ];
 
 export default function SubmitTicketPage() {
@@ -67,6 +84,27 @@ export default function SubmitTicketPage() {
 
   const update = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }));
 
+  function toggleSplit(on: boolean) {
+    setForm((f) => ({
+      ...f,
+      splitTickets: on,
+      holders: on && f.holders.length === 0 ? [{ name: f.customerName, phone: f.phone, quantity: f.quantity }] : f.holders,
+    }));
+  }
+  function addHolder() {
+    setForm((f) => ({ ...f, holders: [...f.holders, { name: "", phone: "", quantity: "" }] }));
+  }
+  function removeHolder(index: number) {
+    setForm((f) => ({ ...f, holders: f.holders.filter((_, i) => i !== index) }));
+  }
+  function updateHolder(index: number, patch: Partial<HolderRow>) {
+    setForm((f) => ({
+      ...f,
+      holders: f.holders.map((h, i) => (i === index ? { ...h, ...patch } : h)),
+    }));
+  }
+  const holdersTotal = form.holders.reduce((sum, h) => sum + (Number(h.quantity) || 0), 0);
+
   function validateStep(current: number): boolean {
     const e: Record<string, string> = {};
     if (current === 0) {
@@ -80,10 +118,28 @@ export default function SubmitTicketPage() {
       if (!form.paymentConfirmed) e.paymentConfirmed = "Please confirm the payment before continuing";
     }
     if (current === 2) {
-      if (form.customerName.trim().length < 3) e.customerName = "Please enter your full name (min 3 characters)";
-      if (!/^03\d{9}$/.test(form.phone.trim())) e.phone = "Enter a valid mobile number (e.g. 03001234567)";
-      if (form.city.trim().length < 2) e.city = "Please enter your city";
-      if (form.cnic && !/^\d{5}-\d{7}-\d{1}$/.test(form.cnic.trim())) e.cnic = "CNIC should look like 12345-1234567-1";
+      if (form.splitTickets) {
+        if (form.holders.length === 0) e.holders = "Add at least one person to assign tickets to";
+        form.holders.forEach((h, i) => {
+          const hName = h.name.trim();
+          if (hName.length < 3) e[`holder_${i}_name`] = "Enter a full name (min 3 characters)";
+          else if (!NAME_REGEX.test(hName)) e[`holder_${i}_name`] = NAME_ERROR;
+          if (!PHONE_REGEX.test(h.phone.trim())) e[`holder_${i}_phone`] = PHONE_ERROR;
+          if (!h.quantity || Number(h.quantity) <= 0) e[`holder_${i}_quantity`] = "Enter a valid ticket count";
+        });
+        if (!e.holders && holdersTotal !== Number(form.quantity)) {
+          e.holders = `Ticket counts add up to ${holdersTotal}, but you selected ${form.quantity} ticket${Number(form.quantity) === 1 ? "" : "s"}. Adjust so they match.`;
+        }
+      } else {
+        const name = form.customerName.trim();
+        if (name.length < 3) e.customerName = "Please enter your full name (min 3 characters)";
+        else if (!NAME_REGEX.test(name)) e.customerName = NAME_ERROR;
+        if (!PHONE_REGEX.test(form.phone.trim())) e.phone = PHONE_ERROR;
+      }
+      const city = form.city.trim();
+      if (city.length < 2) e.city = "Please enter your city";
+      else if (!CITY_REGEX.test(city)) e.city = CITY_ERROR;
+      if (form.cnic && !CNIC_REGEX.test(form.cnic.trim())) e.cnic = CNIC_ERROR;
     }
     if (current === 3) {
       if (!form.ticketImage) e.ticketImage = "Please upload a photo of your ticket/receipt";
@@ -138,10 +194,23 @@ export default function SubmitTicketPage() {
     setSubmitting(true);
     setSubmitError("");
     try {
+      // When tickets are split across multiple people, the first holder becomes the
+      // submission's primary contact; the full breakdown goes in `holders`. Otherwise
+      // only the single customerName/phone fields are sent (and `holders` is omitted,
+      // so any leftover rows from a toggled-off split don't get sent by mistake).
+      const payload = {
+        ...form,
+        amount: Number(form.amount),
+        customerName: form.splitTickets ? form.holders[0]?.name || form.customerName : form.customerName,
+        phone: form.splitTickets ? form.holders[0]?.phone || form.phone : form.phone,
+        holders: form.splitTickets
+          ? form.holders.map((h) => ({ name: h.name, phone: h.phone, quantity: Number(h.quantity) }))
+          : undefined,
+      };
       const res = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, amount: Number(form.amount) }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -168,9 +237,6 @@ export default function SubmitTicketPage() {
 
         {draws.length === 0 && (
           <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-2xl text-red-600 mb-3">
-              🔒
-            </div>
             <h2 className="text-lg font-bold text-red-900">Submissions Currently Closed</h2>
             <p className="mt-1 text-sm text-red-700">
               The deadline for current draw submissions has ended or no active draw is open right now. Please wait for the next draw announcement.
@@ -214,7 +280,12 @@ export default function SubmitTicketPage() {
                   onChange={(e) => {
                     const qty = Math.max(1, Number(e.target.value) || 1);
                     const d = draws.find((x) => x.id === form.drawId);
-                    update({ quantity: String(qty), amount: d ? String(d.ticketPrice * qty) : form.amount });
+                    update({
+                      quantity: String(qty),
+                      amount: d ? String(d.ticketPrice * qty) : form.amount,
+                      // A single ticket can't be split across people — drop any split setup.
+                      ...(qty <= 1 ? { splitTickets: false, holders: [] } : {}),
+                    });
                   }}
                 />
               </Field>
@@ -254,13 +325,12 @@ export default function SubmitTicketPage() {
                         update({ paymentMethod: m.id, paymentConfirmed: false });
                         setPaymentCheckMsg("");
                       }}
-                      className={`flex flex-col items-center gap-1 rounded-xl border-2 px-4 py-4 text-sm font-medium transition cursor-pointer ${
+                      className={`flex items-center justify-center rounded-xl border-2 px-4 py-4 text-sm font-medium transition cursor-pointer ${
                         form.paymentMethod === m.id
                           ? "border-amber-500 bg-amber-50 text-amber-700"
                           : "border-slate-200 text-slate-600 hover:border-slate-300"
                       }`}
                     >
-                      <span className="text-2xl">{m.icon}</span>
                       {m.label}
                     </button>
                   ))}
@@ -280,7 +350,7 @@ export default function SubmitTicketPage() {
                   {checkingPayment
                     ? "Checking payment…"
                     : form.paymentConfirmed
-                    ? "✓ Payment Confirmed"
+                    ? "Payment Confirmed"
                     : "I've Paid — Confirm Payment"}
                 </button>
                 {errors.paymentConfirmed && (
@@ -296,23 +366,127 @@ export default function SubmitTicketPage() {
           {step === 2 && (
             <div className="space-y-5">
               <h2 className="text-lg font-semibold text-slate-900">{steps[2]}</h2>
-              <Field label="Full Name" error={errors.customerName} required>
-                <input
-                  className={inputCls(!!errors.customerName)}
-                  value={form.customerName}
-                  onChange={(e) => update({ customerName: e.target.value })}
-                  placeholder="e.g. Ahmed Raza"
-                />
-              </Field>
-              <Field label="Mobile / WhatsApp Number" error={errors.phone} required>
-                <input
-                  className={inputCls(!!errors.phone)}
-                  value={form.phone}
-                  onChange={(e) => update({ phone: e.target.value })}
-                  placeholder="03001234567"
-                  inputMode="numeric"
-                />
-              </Field>
+
+              {Number(form.quantity) > 1 && (
+                <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 cursor-pointer accent-amber-600"
+                    checked={form.splitTickets}
+                    onChange={(e) => toggleSplit(e.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">Split these {form.quantity} tickets among multiple people</span>
+                    <span className="block text-xs text-slate-500">
+                      e.g. 4 tickets for one person, 2 for another, 4 for a third — instead of one name for all {form.quantity}.
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {!form.splitTickets ? (
+                <>
+                  <Field label="Full Name" error={errors.customerName} required>
+                    <input
+                      className={inputCls(!!errors.customerName)}
+                      value={form.customerName}
+                      onChange={(e) => update({ customerName: e.target.value })}
+                      placeholder="e.g. Ahmed Raza"
+                    />
+                  </Field>
+                  <Field label="Mobile / WhatsApp Number" error={errors.phone} required>
+                    <div className="flex items-stretch">
+                      <span className="flex items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">
+                        {PAKISTAN_DIAL_CODE}
+                      </span>
+                      <input
+                        className={`${inputCls(!!errors.phone)} rounded-l-none`}
+                        value={form.phone}
+                        onChange={(e) => update({ phone: e.target.value })}
+                        placeholder="03001234567"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </Field>
+                </>
+              ) : (
+                <Field
+                  label="Ticket Holders"
+                  error={errors.holders}
+                  hint={!errors.holders ? `Assigned so far: ${holdersTotal} / ${form.quantity} tickets` : undefined}
+                  required
+                >
+                  <div className="space-y-3">
+                    {form.holders.map((h, i) => (
+                      <div key={i} className="rounded-xl border border-slate-200 p-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-semibold text-slate-500">Person {i + 1}</p>
+                          {form.holders.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeHolder(i)}
+                              className="text-xs font-medium text-red-500 hover:underline cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-[2fr_2fr_1fr]">
+                          <div>
+                            <input
+                              className={inputCls(!!errors[`holder_${i}_name`])}
+                              value={h.name}
+                              onChange={(e) => updateHolder(i, { name: e.target.value })}
+                              placeholder="Full name"
+                            />
+                            {errors[`holder_${i}_name`] && (
+                              <p className="mt-1 text-xs font-medium text-red-600">{errors[`holder_${i}_name`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-stretch">
+                              <span className="flex items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-2 text-xs font-medium text-slate-600">
+                                {PAKISTAN_DIAL_CODE}
+                              </span>
+                              <input
+                                className={`${inputCls(!!errors[`holder_${i}_phone`])} rounded-l-none`}
+                                value={h.phone}
+                                onChange={(e) => updateHolder(i, { phone: e.target.value })}
+                                placeholder="03001234567"
+                                inputMode="numeric"
+                              />
+                            </div>
+                            {errors[`holder_${i}_phone`] && (
+                              <p className="mt-1 text-xs font-medium text-red-600">{errors[`holder_${i}_phone`]}</p>
+                            )}
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              min={1}
+                              className={inputCls(!!errors[`holder_${i}_quantity`])}
+                              value={h.quantity}
+                              onChange={(e) => updateHolder(i, { quantity: e.target.value })}
+                              placeholder="Qty"
+                            />
+                            {errors[`holder_${i}_quantity`] && (
+                              <p className="mt-1 text-xs font-medium text-red-600">{errors[`holder_${i}_quantity`]}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addHolder}
+                      className="w-full rounded-xl border-2 border-dashed border-slate-300 py-2 text-sm font-medium text-slate-600 hover:border-amber-400 hover:text-amber-700 cursor-pointer"
+                    >
+                      + Add another person
+                    </button>
+                  </div>
+                </Field>
+              )}
+
               <Field label="City" error={errors.city} required>
                 <input
                   className={inputCls(!!errors.city)}
@@ -337,8 +511,7 @@ export default function SubmitTicketPage() {
               <h2 className="text-lg font-semibold text-slate-900">{steps[3]}</h2>
               <Field label="Upload Ticket / Receipt Photo" error={errors.ticketImage || fileError} required>
                 <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-amber-400">
-                  <span className="text-2xl">📎</span>
-                  <span className="mt-2 text-sm font-medium text-slate-700">Click to upload or drag &amp; drop</span>
+                  <span className="text-sm font-medium text-slate-700">Click to upload or drag &amp; drop</span>
                   <span className="mt-1 text-xs text-slate-400">JPG, PNG or PDF · Max 5MB</span>
                   <input
                     type="file"
@@ -356,7 +529,7 @@ export default function SubmitTicketPage() {
                     <img src={form.ticketImage} alt="Ticket preview" className="max-h-64 rounded-lg border border-slate-100 object-contain" />
                   ) : (
                     <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-                      📄 PDF file selected
+                      PDF file selected
                     </div>
                   )}
                 </div>
@@ -379,12 +552,29 @@ export default function SubmitTicketPage() {
                     form.paymentConfirmed ? "Confirmed" : "Not confirmed"
                   }`}
                 />
-                <Row label="Full Name" value={form.customerName} />
-                <Row label="Mobile Number" value={form.phone} />
+                {!form.splitTickets && (
+                  <>
+                    <Row label="Full Name" value={form.customerName} />
+                    <Row label="Mobile Number" value={form.phone} />
+                  </>
+                )}
                 <Row label="City" value={form.city} />
                 {form.cnic && <Row label="CNIC / ID" value={form.cnic} />}
                 <Row label="Ticket Image" value={form.ticketImageName || "Not attached"} />
               </dl>
+              {form.splitTickets && (
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ticket Holders</p>
+                  <ul className="space-y-1 text-sm text-slate-700">
+                    {form.holders.map((h, i) => (
+                      <li key={i} className="flex justify-between gap-4">
+                        <span>{h.name || "—"} ({PAKISTAN_DIAL_CODE} {h.phone || "—"})</span>
+                        <span className="font-medium">{h.quantity || 0} ticket{Number(h.quantity) === 1 ? "" : "s"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {submitError && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</div>
               )}

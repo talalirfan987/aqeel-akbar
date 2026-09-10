@@ -48,11 +48,24 @@ export default function CustomerTicketPage({ params }: { params: Promise<{ id: s
                 <Row label="Draw Date" value={ticket.drawDate} />
                 <Row label="Submitted" value={new Date(ticket.submittedAt).toLocaleString()} />
                 {ticket.verifiedAt && <Row label="Verified" value={new Date(ticket.verifiedAt).toLocaleString()} />}
-                {ticket.isWinner && <Row label="Prize" value={ticket.prize || "🏆 Winner"} />}
+                {ticket.isWinner && <Row label="Prize" value={ticket.prize || "Winner"} />}
               </dl>
               {ticket.adminNotes && (ticket.status === "rejected" || ticket.status === "cancelled") && (
                 <div className="mt-4 rounded-xl border border-red-400/20 bg-red-500/10 p-3 text-sm text-red-200">
                   {ticket.adminNotes}
+                </div>
+              )}
+              {ticket.holders && ticket.holders.length > 0 && (
+                <div className="mt-4 border-t border-amber-400/20 pt-3">
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-400/70">Ticket Holders</p>
+                  <ul className="space-y-1 text-sm text-slate-200">
+                    {ticket.holders.map((h, i) => (
+                      <li key={i} className="flex justify-between gap-3">
+                        <span>{h.name}</span>
+                        <span className="text-slate-400">{h.quantity} ticket{h.quantity === 1 ? "" : "s"}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

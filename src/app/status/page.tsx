@@ -16,6 +16,7 @@ interface PublicTicket {
   submittedAt: string;
   verifiedAt?: string;
   adminNotes?: string;
+  holders?: { name: string; quantity: number }[];
 }
 
 function StatusContent() {
@@ -108,7 +109,7 @@ function StatusContent() {
                     title="Copy Reference ID"
                     className="rounded-lg bg-amber-500/10 px-2 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/20 transition-all cursor-pointer"
                   >
-                    📋 Copy
+                    Copy
                   </button>
                 </div>
               </div>
@@ -124,9 +125,23 @@ function StatusContent() {
               {ticket.verifiedAt && <Row label="Verification Date" value={new Date(ticket.verifiedAt).toLocaleString()} />}
             </dl>
 
+            {ticket.holders && ticket.holders.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ticket Holders</p>
+                <ul className="space-y-1 text-sm text-slate-700">
+                  {ticket.holders.map((h, i) => (
+                    <li key={i} className="flex justify-between gap-3">
+                      <span>{h.name}</span>
+                      <span className="font-medium">{h.quantity} ticket{h.quantity === 1 ? "" : "s"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {ticket.status === "rejected" && ticket.adminNotes && (
               <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">
-                <strong className="block mb-1 text-sm font-bold text-red-800">⚠️ Note from operator:</strong>
+                <strong className="block mb-1 text-sm font-bold text-red-800">Note from operator:</strong>
                 {ticket.adminNotes}
               </div>
             )}
@@ -141,7 +156,7 @@ function StatusContent() {
                 rel="noopener noreferrer"
                 className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 shadow-md transition-all flex items-center gap-1.5"
               >
-                💬 Ask Operator on WhatsApp
+                Ask Operator on WhatsApp
               </a>
             </div>
           </div>
@@ -175,7 +190,7 @@ function Timeline({ status }: { status: TicketStatus }) {
                     done ? statusColor(status) : "bg-slate-200 text-slate-500"
                   }`}
                 >
-                  {done ? "✓" : i + 1}
+                  {i + 1}
                 </div>
                 {i < stages.length - 1 && (
                   <div className={`h-0.5 flex-1 ${i < activeIndex ? statusLine(status) : "bg-slate-200"}`} />

@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
       submittedAt: ticket.submittedAt,
       verifiedAt: ticket.verifiedAt,
       adminNotes: ticket.status === "rejected" ? ticket.adminNotes : undefined,
+      holders: ticket.holders?.map((h) => ({ name: maskName(h.name), quantity: h.quantity })),
     },
   });
 }
