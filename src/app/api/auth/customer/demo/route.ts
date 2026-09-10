@@ -7,13 +7,10 @@ import { createCustomerSession } from "@/lib/customerAuth";
 const DEMO_PHONE = "03000000000";
 
 // One-click demo login for reviewers — signs in as a fixed "Demo Customer" account
-// with no name/password required. Disabled outside development so this can never
-// become a real authentication bypass if the app is ever deployed.
+// with no name/password required. Enabled in production at the owner's explicit
+// request; this is a real authentication bypass on this deployment, not gated by
+// anything.
 export async function POST() {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Demo login is only available in development" }, { status: 403 });
-  }
-
   const db = await getDb();
   let customer = db.data!.customers.find((c) => c.phone === DEMO_PHONE);
   if (!customer) {
