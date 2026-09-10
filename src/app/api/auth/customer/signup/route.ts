@@ -5,13 +5,11 @@ import { nanoid } from "nanoid";
 import { getDb } from "@/lib/db";
 import { createCustomerSession } from "@/lib/customerAuth";
 import { isRateLimited } from "@/lib/rateLimit";
+import { nameSchema, phoneSchema } from "@/lib/validation";
 
 const schema = z.object({
-  name: z.string().trim().min(3, "Please enter your full name").max(100),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^03\d{9}$/, "Enter a valid Pakistani mobile number (e.g. 03001234567)"),
+  name: nameSchema,
+  phone: phoneSchema,
   password: z.string().min(6, "Password must be at least 6 characters").max(100),
 });
 
