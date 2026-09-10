@@ -11,6 +11,26 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  async function handleDemo() {
+    setDemoLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/demo", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Demo login failed");
+        setDemoLoading(false);
+        return;
+      }
+      router.push(params.get("next") || "/admin");
+      router.refresh();
+    } catch {
+      setError("Network error. Please try again.");
+      setDemoLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +69,7 @@ function LoginForm() {
         <div className="mb-6 text-center">
           <Logo className="mx-auto mb-3 h-12 w-12 drop-shadow-[0_0_20px_rgba(217,161,58,0.35)]" />
           <h1 className="text-lg font-bold text-white">Admin Dashboard</h1>
-          <p className="mt-1 text-xs text-amber-200/50">Akeel Akbar Lottery Management System</p>
+          <p className="mt-1 text-xs text-amber-200/50">Lucky Lottery Management System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -82,6 +102,25 @@ function LoginForm() {
             {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
+
+        {process.env.NODE_ENV !== "production" && (
+          <>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-amber-400/15" />
+              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500">or</span>
+              <div className="h-px flex-1 bg-amber-400/15" />
+            </div>
+            <button
+              type="button"
+              onClick={handleDemo}
+              disabled={demoLoading}
+              className="mt-4 w-full rounded-xl border border-dashed border-amber-400/40 px-4 py-2.5 text-sm font-medium text-amber-300 hover:bg-amber-400/10 disabled:opacity-60 cursor-pointer"
+            >
+              {demoLoading ? "Loading demo…" : "Skip Login — View Demo"}
+            </button>
+          </>
+        )}
+
         <p className="mt-6 text-center text-[11px] text-slate-500">Demo credentials — admin / admin123</p>
       </div>
     </main>
