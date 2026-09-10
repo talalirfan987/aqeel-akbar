@@ -111,23 +111,19 @@ function LoginForm() {
           </button>
         </form>
 
-        {process.env.NODE_ENV !== "production" && (
-          <>
-            <div className="mt-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-amber-400/15" />
-              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500">or</span>
-              <div className="h-px flex-1 bg-amber-400/15" />
-            </div>
-            <button
-              type="button"
-              onClick={handleDemo}
-              disabled={demoLoading}
-              className="mt-4 w-full rounded-xl border border-dashed border-amber-400/40 px-4 py-2.5 text-sm font-medium text-amber-300 hover:bg-amber-400/10 disabled:opacity-60 cursor-pointer"
-            >
-              {demoLoading ? "Loading demo…" : "Skip Login — View Demo"}
-            </button>
-          </>
-        )}
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-amber-400/15" />
+          <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500">or</span>
+          <div className="h-px flex-1 bg-amber-400/15" />
+        </div>
+        <button
+          type="button"
+          onClick={handleDemo}
+          disabled={demoLoading}
+          className="mt-4 w-full rounded-xl border border-dashed border-amber-400/40 px-4 py-2.5 text-sm font-medium text-amber-300 hover:bg-amber-400/10 disabled:opacity-60 cursor-pointer"
+        >
+          {demoLoading ? "Loading demo…" : "Skip Login — View Demo"}
+        </button>
 
         <p className="mt-6 text-center text-xs text-slate-500">
           Don&apos;t have an account?{" "}
