@@ -36,7 +36,7 @@ export default function SiteHeader() {
         <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2 font-semibold text-white">
           <Logo className="h-9 w-9 shrink-0 drop-shadow-[0_0_10px_rgba(217,161,58,0.35)]" />
           <span className="hidden leading-tight md:block">
-            <span className="block text-sm font-bold tracking-wide">Akeel Akbar Lottery</span>
+            <span className="block text-sm font-bold tracking-wide">Lucky Lottery</span>
             <span className="block text-xs font-normal text-amber-200/60">Management System</span>
           </span>
         </Link>
@@ -55,7 +55,7 @@ export default function SiteHeader() {
             href={customerName ? "/account" : "/account/login"}
             className="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 hover:border-amber-400/60 hover:text-amber-300"
           >
-            {customerName ? `👤 ${customerName.split(" ")[0]}` : "Login / Sign Up"}
+            {customerName ? customerName.split(" ")[0] : "Login / Sign Up"}
           </Link>
         </div>
 
@@ -89,7 +89,7 @@ export default function SiteHeader() {
               className="rounded-xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200"
               onClick={() => setOpen(false)}
             >
-              {customerName ? `👤 ${customerName.split(" ")[0]}` : "Login / Sign Up"}
+              {customerName ? customerName.split(" ")[0] : "Login / Sign Up"}
             </Link>
           </div>
         </div>

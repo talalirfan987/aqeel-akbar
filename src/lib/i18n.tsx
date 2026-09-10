@@ -6,7 +6,7 @@ export type Lang = "en" | "ur" | "roman";
 
 const dict = {
   en: {
-    heroTitle: "Akeel Akbar Lottery Ticket Management",
+    heroTitle: "Lucky Lottery Ticket Management",
     heroSubtitle: "Submit, verify, and manage your ticket records securely and easily.",
     submitTicket: "Get Your Ticket",
     checkStatus: "Check Ticket Status",
@@ -23,7 +23,7 @@ const dict = {
       "Every ticket, verification, and winner is tracked and published openly here — nothing happens behind closed doors. Trust is built through transparency, not promises.",
   },
   ur: {
-    heroTitle: "عقیل اکبر لاٹری ٹکٹ مینجمنٹ",
+    heroTitle: "لکی لاٹری ٹکٹ مینجمنٹ",
     heroSubtitle: "اپنے ٹکٹ ریکارڈ محفوظ اور آسان طریقے سے جمع، تصدیق اور منظم کریں۔",
     submitTicket: "ٹکٹ جمع کروائیں",
     checkStatus: "ٹکٹ کی صورتحال دیکھیں",
@@ -39,7 +39,7 @@ const dict = {
     disclaimer: "ہر ٹکٹ، تصدیق اور فاتح یہاں کھلے عام ٹریک اور شائع کیا جاتا ہے — کچھ بھی پردے کے پیچھے نہیں ہوتا۔ اعتماد شفافیت سے بنتا ہے، وعدوں سے نہیں۔",
   },
   roman: {
-    heroTitle: "Akeel Akbar Lottery Ticket Management",
+    heroTitle: "Lucky Lottery Ticket Management",
     heroSubtitle: "Apne ticket records ko surakhsit aur asaan tareeqay se submit, verify aur manage karein.",
     submitTicket: "Ticket Submit Karein",
     checkStatus: "Ticket Status Check Karein",

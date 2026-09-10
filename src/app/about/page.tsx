@@ -2,7 +2,7 @@ export default function AboutPage() {
   return (
     <main className="flex-1 bg-white">
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900">About Akeel Akbar Lottery</h1>
+        <h1 className="text-2xl font-bold text-slate-900">About Lucky Lottery</h1>
         <div className="mt-6 space-y-4 text-sm leading-relaxed text-slate-600">
           <p>
             My name is Akeel Akbar, and I&apos;m originally from Turbat, Balochistan. I have been running my lottery

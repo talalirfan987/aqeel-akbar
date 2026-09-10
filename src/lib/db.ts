@@ -23,8 +23,8 @@ let dbInstance: Low<DbShape> | null = null;
 
 function seed(db: Low<DbShape>) {
   const draws: Draw[] = [
-    { id: "d1", name: "Akeel Akbar Prize Bond Draw #45", drawDate: "2026-09-15", ticketPrice: 2000, active: true },
-    { id: "d2", name: "Akeel Akbar Prize Bond Draw #46", drawDate: "2026-10-15", ticketPrice: 2000, active: true },
+    { id: "d1", name: "Lucky Lottery Prize Bond Draw #45", drawDate: "2026-09-15", ticketPrice: 2000, active: true },
+    { id: "d2", name: "Lucky Lottery Prize Bond Draw #46", drawDate: "2026-10-15", ticketPrice: 2000, active: true },
   ];
 
   const admins: AdminUser[] = [

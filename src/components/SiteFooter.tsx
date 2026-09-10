@@ -16,7 +16,7 @@ export default function SiteFooter() {
           <div>
             <div className="mb-2 flex items-center gap-2 font-semibold text-white">
               <Logo className="h-8 w-8 shrink-0" />
-              Akeel Akbar Lottery Management System
+              Lucky Lottery Management System
             </div>
             <p className="text-sm text-slate-400">
               A digital record-management platform for submitting and tracking lottery ticket records.
@@ -46,7 +46,7 @@ export default function SiteFooter() {
             Participation may be subject to applicable provincial regulations and age restrictions (18+ where applicable).
             This platform is a record-management tool only and does not itself conduct or officiate draws.
           </p>
-          <p>© {new Date().getFullYear()} Akeel Akbar Lottery Management System. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Lucky Lottery Management System. All rights reserved.</p>
         </div>
       </div>
     </footer>

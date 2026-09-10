@@ -45,9 +45,9 @@ export default function WinnersPage() {
     <main className="flex-1 bg-slate-950">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">🏆 Winners</h1>
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">Winners</h1>
           <p className="mt-2 text-sm text-amber-200/60">
-            Every draw result announced by Akeel Akbar Lottery — out in the open, for everyone to see.
+            Every draw result announced by Lucky Lottery — out in the open, for everyone to see.
           </p>
         </div>
 
@@ -107,7 +107,7 @@ export default function WinnersPage() {
                     <p className="font-semibold text-white">{w.customerName}</p>
                     {w.prize && (
                       <span className="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-300">
-                        🏆 {w.prize}
+                        {w.prize}
                       </span>
                     )}
                   </div>

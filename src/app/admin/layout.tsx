@@ -4,16 +4,16 @@ import AdminLogoutButton from "@/components/AdminLogoutButton";
 import Logo from "@/components/Logo";
 
 const nav = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
-  { href: "/admin/tickets", label: "Tickets", icon: "🎟️" },
-  { href: "/admin/conversations", label: "Conversations", icon: "💬" },
-  { href: "/admin/customers", label: "Customers", icon: "👥" },
-  { href: "/admin/draws", label: "Draws", icon: "🎯" },
-  { href: "/admin/winners", label: "Winners List", icon: "🏆" },
-  { href: "/admin/reports", label: "Reports", icon: "📈" },
-  { href: "/admin/notifications", label: "Notifications", icon: "🔔" },
-  { href: "/admin/audit-logs", label: "Audit Logs", icon: "🛡️" },
-  { href: "/admin/settings", label: "Settings", icon: "⚙️" },
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/tickets", label: "Tickets" },
+  { href: "/admin/conversations", label: "Conversations" },
+  { href: "/admin/customers", label: "Customers" },
+  { href: "/admin/draws", label: "Draws" },
+  { href: "/admin/winners", label: "Winners List" },
+  { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/notifications", label: "Notifications" },
+  { href: "/admin/audit-logs", label: "Audit Logs" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin" className="mb-6 flex items-center gap-2 px-2 text-white">
           <Logo className="h-9 w-9 shrink-0 drop-shadow-[0_0_16px_rgba(217,161,58,0.3)]" />
           <span className="text-sm font-semibold leading-tight">
-            Akeel Akbar Lottery
+            Lucky Lottery
             <span className="block text-[11px] font-normal text-amber-200/50">Admin Dashboard</span>
           </span>
         </Link>
@@ -38,9 +38,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={n.href}
               href={n.href}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-amber-400/10 hover:text-amber-300"
+              className="flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-amber-400/10 hover:text-amber-300"
             >
-              <span>{n.icon}</span>
               {n.label}
             </Link>
           ))}
@@ -64,7 +63,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <nav className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-2 py-2 md:hidden">
           {nav.map((n) => (
             <Link key={n.href} href={n.href} className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">
-              {n.icon} {n.label}
+              {n.label}
             </Link>
           ))}
         </nav>

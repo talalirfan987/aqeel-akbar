@@ -19,14 +19,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Akeel Akbar Lottery",
-    template: "%s · Akeel Akbar Lottery",
+    default: "Lucky Lottery",
+    template: "%s · Lucky Lottery",
   },
   description: "Submit, verify, and manage your lottery ticket records securely and easily.",
   openGraph: {
-    title: "Akeel Akbar Lottery",
+    title: "Lucky Lottery",
     description: "Submit, verify, and manage your lottery ticket records securely and easily.",
-    siteName: "Akeel Akbar Lottery",
+    siteName: "Lucky Lottery",
     type: "website",
   },
 };
