@@ -116,24 +116,52 @@ export default function DrawsPage() {
         </form>
       )}
 
-      <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
-        {loading && <p className="text-sm text-slate-400">Loading draws list…</p>}
-        {!loading && draws.length === 0 && <p className="text-sm text-slate-400">No draws configured yet.</p>}
-        {!loading &&
-          draws.map((d) => (
-            <DrawCard
-              key={d.id}
-              draw={d}
-              isBusy={updatingId === d.id}
-              onUpdate={(patch) => updateDraw(d.id, patch)}
-            />
-          ))}
+      <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-md">
+        <table className="w-full min-w-[880px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+              <th className="px-4 py-3">Draw</th>
+              <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Day</th>
+              <th className="px-4 py-3">Hour</th>
+              <th className="px-4 py-3">Minute</th>
+              <th className="px-4 py-3">Countdown</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {loading && (
+              <tr>
+                <td colSpan={8} className="px-4 py-6 text-sm text-slate-400">
+                  Loading draws list…
+                </td>
+              </tr>
+            )}
+            {!loading && draws.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-6 text-sm text-slate-400">
+                  No draws configured yet.
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              draws.map((d) => (
+                <DrawRow
+                  key={d.id}
+                  draw={d}
+                  isBusy={updatingId === d.id}
+                  onUpdate={(patch) => updateDraw(d.id, patch)}
+                />
+              ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-function DrawCard({
+function DrawRow({
   draw,
   isBusy,
   onUpdate,
@@ -142,10 +170,10 @@ function DrawCard({
   isBusy: boolean;
   onUpdate: (patch: Partial<Draw>) => void;
 }) {
+  const [date, setDate] = useState(draw.drawDate);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(5); // Default 5 minutes
-  const [seconds, setSeconds] = useState(0);
 
   const hasTimer = typeof draw.timerEndMs === "number" && draw.timerEndMs > Date.now();
   const remainingSecs = hasTimer ? Math.max(0, Math.floor((draw.timerEndMs! - Date.now()) / 1000)) : 0;
@@ -154,154 +182,94 @@ function DrawCard({
   const remMins = Math.floor((remainingSecs % 3600) / 60);
   const remSecs = remainingSecs % 60;
 
-  function handleSetCustomTimer() {
-    const totalSecs = days * 86400 + hours * 3600 + minutes * 60 + seconds;
+  function handleSetTimer() {
+    const totalSecs = days * 86400 + hours * 3600 + minutes * 60;
     if (totalSecs <= 0) return;
     const targetMs = Date.now() + totalSecs * 1000;
     onUpdate({ timerEndMs: targetMs, active: true });
   }
 
-  function handlePresetTimer(mins: number) {
-    const targetMs = Date.now() + mins * 60 * 1000;
-    onUpdate({ timerEndMs: targetMs, active: true });
+  function handleDateBlur() {
+    if (date && date !== draw.drawDate) onUpdate({ drawDate: date });
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-md space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
-              draw.active ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-            }`}
-          >
-            <span className={`h-2 w-2 rounded-full ${draw.active ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
-            {draw.active ? "SUBMISSIONS OPEN" : "SUBMISSIONS CLOSED"}
-          </span>
-          <h3 className="mt-2 text-xl font-black text-slate-900">{draw.name}</h3>
-          <p className="text-xs text-slate-500">Scheduled Date: {draw.drawDate}</p>
-        </div>
-        <span className="text-lg font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
-          PKR {draw.ticketPrice.toLocaleString()}
-        </span>
-      </div>
-
-      {/* Draw Status Control */}
-      <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-600">Quick Status Control:</span>
+    <tr className="align-top">
+      <td className="px-4 py-3">
+        <p className="font-black text-slate-900">{draw.name}</p>
+        <p className="text-xs font-bold text-amber-600">PKR {draw.ticketPrice.toLocaleString()}</p>
+      </td>
+      <td className="px-4 py-3">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          onBlur={handleDateBlur}
+          disabled={isBusy}
+          className="w-36 rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 disabled:opacity-50"
+        />
+      </td>
+      <td className="px-4 py-3">
         <button
           disabled={isBusy}
           onClick={() => onUpdate({ active: !draw.active })}
-          className={`rounded-xl px-4 py-2 text-xs font-extrabold uppercase tracking-wide cursor-pointer transition ${
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide cursor-pointer transition disabled:opacity-50 ${
             draw.active
-              ? "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-              : "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+              ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+              : "bg-red-100 text-red-800 hover:bg-red-200"
           }`}
         >
-          {isBusy ? "Updating…" : draw.active ? "Close Submissions" : "Open Submissions"}
+          <span className={`h-2 w-2 rounded-full ${draw.active ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+          {isBusy ? "…" : draw.active ? "Open" : "Closed"}
         </button>
-      </div>
-
-      {/* Live Countdown Inputs: Days, Hours, Minutes, Seconds */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-extrabold uppercase tracking-wide text-amber-900 flex items-center gap-1">
-            Configure Live Countdown Timer
+      </td>
+      <td className="px-4 py-3">
+        <input
+          type="number"
+          min={0}
+          value={days}
+          onChange={(e) => setDays(Math.max(0, Number(e.target.value) || 0))}
+          className="w-16 text-center rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+        />
+      </td>
+      <td className="px-4 py-3">
+        <input
+          type="number"
+          min={0}
+          max={23}
+          value={hours}
+          onChange={(e) => setHours(Math.max(0, Number(e.target.value) || 0))}
+          className="w-16 text-center rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+        />
+      </td>
+      <td className="px-4 py-3">
+        <input
+          type="number"
+          min={0}
+          max={59}
+          value={minutes}
+          onChange={(e) => setMinutes(Math.max(0, Number(e.target.value) || 0))}
+          className="w-16 text-center rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-bold text-amber-600 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+        />
+      </td>
+      <td className="px-4 py-3">
+        {hasTimer ? (
+          <span className="inline-block whitespace-nowrap rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-300">
+            {remDays}d {remHours}h {remMins}m {remSecs}s
           </span>
-          {hasTimer ? (
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-              Active: {remDays}d {remHours}h {remMins}m {remSecs}s
-            </span>
-          ) : (
-            <span className="text-xs font-medium text-slate-400">No active timer set</span>
-          )}
-        </div>
-
-        {/* 4 Input Boxes for Days, Hours, Minutes, Seconds */}
-        <div className="grid grid-cols-4 gap-2">
-          <div>
-            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-              Days
-            </label>
-            <input
-              type="number"
-              min={0}
-              value={days}
-              onChange={(e) => setDays(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full text-center rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-              Hours
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={23}
-              value={hours}
-              onChange={(e) => setHours(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full text-center rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-              Minutes
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={59}
-              value={minutes}
-              onChange={(e) => setMinutes(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full text-center rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm font-bold text-amber-600 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-              Seconds
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={59}
-              value={seconds}
-              onChange={(e) => setSeconds(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full text-center rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-            />
-          </div>
-        </div>
-
+        ) : (
+          <span className="text-xs font-medium text-slate-400">No timer</span>
+        )}
+      </td>
+      <td className="px-4 py-3">
         <button
           disabled={isBusy}
-          onClick={handleSetCustomTimer}
-          className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 shadow-md hover:scale-[1.01] transition active:scale-95 cursor-pointer disabled:opacity-50"
+          onClick={handleSetTimer}
+          className="whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-950 shadow-md hover:scale-[1.02] transition active:scale-95 cursor-pointer disabled:opacity-50"
         >
-          {isBusy ? "Saving Timer…" : "Save & Set Live Timer"}
+          {isBusy ? "Saving…" : "Save Timer"}
         </button>
-
-        {/* Quick Presets */}
-        <div className="flex items-center justify-between border-t border-amber-200/60 pt-3">
-          <span className="text-[11px] font-bold text-amber-900">Quick Presets:</span>
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { label: "5 Mins", mins: 5 },
-              { label: "15 Mins", mins: 15 },
-              { label: "1 Hour", mins: 60 },
-              { label: "1 Day", mins: 1440 },
-            ].map((p) => (
-              <button
-                key={p.mins}
-                disabled={isBusy}
-                onClick={() => handlePresetTimer(p.mins)}
-                className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-900 hover:bg-amber-400 hover:text-slate-950 transition cursor-pointer"
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
