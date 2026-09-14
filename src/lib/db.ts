@@ -1,12 +1,64 @@
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
-import path from "path";
+import { neon } from "@neondatabase/serverless";
+import { setDefaultResultOrder } from "dns";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import type { DbShape, Draw, Ticket, AdminUser, WinnerEntry } from "./types";
 
-const file = path.join(process.cwd(), "src", "data", "db.json");
-const adapter = new JSONFile<DbShape>(file);
+// Some networks (and this app's dev sandbox) resolve Neon's hostname to an
+// IPv6 address that's unreachable and only fall back to IPv4 after a long
+// timeout, or not at all. Prefer IPv4 first so connections don't hang/fail.
+setDefaultResultOrder("ipv4first");
+
+// Data lives in Postgres (Neon) as a single JSONB row, keyed by ROW_ID. Vercel's
+// serverless filesystem is read-only, so the old lowdb-on-a-JSON-file approach
+// could never persist writes in production (it only ever worked in local dev).
+// Every route in the app still just does `const db = await getDb(); db.data!.x`
+// then `await db.write()` — only this file changed.
+const sql = neon(process.env.DATABASE_URL!);
+const ROW_ID = "main";
+
+let schemaReady: Promise<void> | null = null;
+function ensureSchema() {
+  if (!schemaReady) {
+    schemaReady = sql`
+      CREATE TABLE IF NOT EXISTS app_state (
+        id text PRIMARY KEY,
+        data jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `.then(() => undefined);
+  }
+  return schemaReady;
+}
+
+class PgStore {
+  data: DbShape | null = null;
+
+  async read() {
+    await ensureSchema();
+    const rows = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
+    if (rows.length === 0) {
+      seed(this);
+      await sql`
+        INSERT INTO app_state (id, data) VALUES (${ROW_ID}, ${JSON.stringify(this.data)}::jsonb)
+        ON CONFLICT (id) DO NOTHING
+      `;
+      // Someone else may have seeded concurrently (e.g. two cold starts racing) —
+      // re-read so every instance converges on the same row.
+      const [row] = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
+      this.data = row.data as DbShape;
+    } else {
+      this.data = rows[0].data as DbShape;
+    }
+  }
+
+  async write() {
+    await sql`
+      UPDATE app_state SET data = ${JSON.stringify(this.data)}::jsonb, updated_at = now()
+      WHERE id = ${ROW_ID}
+    `;
+  }
+}
 
 const defaultData: DbShape = {
   draws: [],
@@ -19,9 +71,7 @@ const defaultData: DbShape = {
   messages: [],
 };
 
-let dbInstance: Low<DbShape> | null = null;
-
-function seed(db: Low<DbShape>) {
+function seed(db: PgStore) {
   const draws: Draw[] = [
     { id: "d1", name: "Lucky Lottery Prize Bond Draw #45", drawDate: "2026-09-15", ticketPrice: 2000, active: true },
     { id: "d2", name: "Lucky Lottery Prize Bond Draw #46", drawDate: "2026-10-15", ticketPrice: 2000, active: true },
@@ -190,30 +240,26 @@ function seed(db: Low<DbShape>) {
 }
 
 export async function getDb() {
-  if (dbInstance) return dbInstance;
-  const db = new Low<DbShape>(adapter, defaultData);
+  const db = new PgStore();
   await db.read();
-  if (!db.data || !db.data.tickets || db.data.tickets.length === 0) {
-    if (!db.data) db.data = defaultData;
-    seed(db);
-    await db.write();
-  } else {
-    let dirty = false;
-    if (!db.data.customers) {
-      db.data.customers = [];
-      dirty = true;
-    }
-    if (!db.data.winnerEntries) {
-      db.data.winnerEntries = [];
-      dirty = true;
-    }
-    if (!db.data.messages) {
-      db.data.messages = [];
-      dirty = true;
-    }
-    if (dirty) await db.write();
+  if (!db.data) db.data = defaultData;
+
+  // Backfill collections added after some rows were already seeded, same as before.
+  let dirty = false;
+  if (!db.data.customers) {
+    db.data.customers = [];
+    dirty = true;
   }
-  dbInstance = db;
+  if (!db.data.winnerEntries) {
+    db.data.winnerEntries = [];
+    dirty = true;
+  }
+  if (!db.data.messages) {
+    db.data.messages = [];
+    dirty = true;
+  }
+  if (dirty) await db.write();
+
   return db;
 }
 
