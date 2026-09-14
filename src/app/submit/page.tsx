@@ -15,7 +15,8 @@ import {
   PHONE_REGEX,
 } from "@/lib/validation";
 
-type HolderRow = { name: string; phone: string; quantity: string };
+// Each holder row is one ticket, so there's no separate quantity to type in per row.
+type HolderRow = { name: string; phone: string };
 
 type FormState = {
   drawId: string;
@@ -88,11 +89,11 @@ export default function SubmitTicketPage() {
     setForm((f) => ({
       ...f,
       splitTickets: on,
-      holders: on && f.holders.length === 0 ? [{ name: f.customerName, phone: f.phone, quantity: f.quantity }] : f.holders,
+      holders: on && f.holders.length === 0 ? [{ name: f.customerName, phone: f.phone }] : f.holders,
     }));
   }
   function addHolder() {
-    setForm((f) => ({ ...f, holders: [...f.holders, { name: "", phone: "", quantity: "" }] }));
+    setForm((f) => ({ ...f, holders: [...f.holders, { name: "", phone: "" }] }));
   }
   function removeHolder(index: number) {
     setForm((f) => ({ ...f, holders: f.holders.filter((_, i) => i !== index) }));
@@ -103,7 +104,6 @@ export default function SubmitTicketPage() {
       holders: f.holders.map((h, i) => (i === index ? { ...h, ...patch } : h)),
     }));
   }
-  const holdersTotal = form.holders.reduce((sum, h) => sum + (Number(h.quantity) || 0), 0);
 
   function validateStep(current: number): boolean {
     const e: Record<string, string> = {};
@@ -125,10 +125,9 @@ export default function SubmitTicketPage() {
           if (hName.length < 3) e[`holder_${i}_name`] = "Enter a full name (min 3 characters)";
           else if (!NAME_REGEX.test(hName)) e[`holder_${i}_name`] = NAME_ERROR;
           if (!PHONE_REGEX.test(h.phone.trim())) e[`holder_${i}_phone`] = PHONE_ERROR;
-          if (!h.quantity || Number(h.quantity) <= 0) e[`holder_${i}_quantity`] = "Enter a valid ticket count";
         });
-        if (!e.holders && holdersTotal !== Number(form.quantity)) {
-          e.holders = `Ticket counts add up to ${holdersTotal}, but you selected ${form.quantity} ticket${Number(form.quantity) === 1 ? "" : "s"}. Adjust so they match.`;
+        if (!e.holders && form.holders.length !== Number(form.quantity)) {
+          e.holders = `You've added ${form.holders.length} ${form.holders.length === 1 ? "person" : "people"}, but selected ${form.quantity} ticket${Number(form.quantity) === 1 ? "" : "s"}. Add or remove rows so each ticket has one name.`;
         }
       } else {
         const name = form.customerName.trim();
@@ -204,7 +203,7 @@ export default function SubmitTicketPage() {
         customerName: form.splitTickets ? form.holders[0]?.name || form.customerName : form.customerName,
         phone: form.splitTickets ? form.holders[0]?.phone || form.phone : form.phone,
         holders: form.splitTickets
-          ? form.holders.map((h) => ({ name: h.name, phone: h.phone, quantity: Number(h.quantity) }))
+          ? form.holders.map((h) => ({ name: h.name, phone: h.phone, quantity: 1 }))
           : undefined,
       };
       const res = await fetch("/api/tickets", {
@@ -413,7 +412,7 @@ export default function SubmitTicketPage() {
                 <Field
                   label="Ticket Holders"
                   error={errors.holders}
-                  hint={!errors.holders ? `Assigned so far: ${holdersTotal} / ${form.quantity} tickets` : undefined}
+                  hint={!errors.holders ? `Assigned so far: ${form.holders.length} / ${form.quantity} tickets (one ticket per person)` : undefined}
                   required
                 >
                   <div className="space-y-3">
@@ -431,7 +430,7 @@ export default function SubmitTicketPage() {
                             </button>
                           )}
                         </div>
-                        <div className="mt-2 grid gap-2 sm:grid-cols-[2fr_2fr_1fr]">
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
                           <div>
                             <input
                               className={inputCls(!!errors[`holder_${i}_name`])}
@@ -458,19 +457,6 @@ export default function SubmitTicketPage() {
                             </div>
                             {errors[`holder_${i}_phone`] && (
                               <p className="mt-1 text-xs font-medium text-red-600">{errors[`holder_${i}_phone`]}</p>
-                            )}
-                          </div>
-                          <div>
-                            <input
-                              type="number"
-                              min={1}
-                              className={inputCls(!!errors[`holder_${i}_quantity`])}
-                              value={h.quantity}
-                              onChange={(e) => updateHolder(i, { quantity: e.target.value })}
-                              placeholder="Qty"
-                            />
-                            {errors[`holder_${i}_quantity`] && (
-                              <p className="mt-1 text-xs font-medium text-red-600">{errors[`holder_${i}_quantity`]}</p>
                             )}
                           </div>
                         </div>
@@ -568,8 +554,10 @@ export default function SubmitTicketPage() {
                   <ul className="space-y-1 text-sm text-slate-700">
                     {form.holders.map((h, i) => (
                       <li key={i} className="flex justify-between gap-4">
-                        <span>{h.name || "—"} ({PAKISTAN_DIAL_CODE} {h.phone || "—"})</span>
-                        <span className="font-medium">{h.quantity || 0} ticket{Number(h.quantity) === 1 ? "" : "s"}</span>
+                        <span>Ticket {i + 1}</span>
+                        <span className="font-medium">
+                          {h.name || "—"} ({PAKISTAN_DIAL_CODE} {h.phone || "—"})
+                        </span>
                       </li>
                     ))}
                   </ul>
