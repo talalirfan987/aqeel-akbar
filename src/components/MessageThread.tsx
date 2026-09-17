@@ -26,25 +26,40 @@ export default function MessageThread({
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastCountRef = useRef<number>(-1);
 
   async function load() {
-    const res = await fetch(`/api/tickets/${ticketId}/messages`);
-    const data = await res.json();
-    if (res.ok) setMessages(data.messages);
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/messages`);
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.messages)) {
+        if (data.messages.length !== lastCountRef.current) {
+          lastCountRef.current = data.messages.length;
+          setMessages(data.messages);
+          // Only scroll the inner messages div, never the page window
+          if (bare && containerRef.current) {
+            setTimeout(() => {
+              if (containerRef.current) {
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+              }
+            }, 50);
+          }
+        }
+      }
+    } catch {
+      // Ignore polling errors
+    }
   }
 
   useEffect(() => {
+    lastCountRef.current = -1;
     load();
-    // Poll for new messages so a live conversation feels like a real chat app.
+    // Poll for new messages
     const t = setInterval(load, 4000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +78,10 @@ export default function MessageThread({
       return;
     }
     setText("");
-    load();
+    await load();
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }
 
   const dark = theme === "dark";
@@ -73,12 +91,13 @@ export default function MessageThread({
       className={
         bare
           ? "flex h-full flex-col"
-          : `rounded-2xl border p-4 ${dark ? "border-amber-400/20 bg-white/5" : "border-slate-200 bg-white"}`
+          : `rounded-2xl border p-4 ${dark ? "border-amber-400/20 bg-white/5" : "border-slate-200 bg-white shadow-xs"}`
       }
     >
-      {!bare && <h2 className={`mb-3 text-sm font-bold ${dark ? "text-white" : "text-slate-900"}`}>Messages</h2>}
+      {!bare && <h2 className={`mb-3 text-sm font-bold ${dark ? "text-white" : "text-slate-900"}`}>Customer Messages</h2>}
 
       <div
+        ref={containerRef}
         className={`space-y-2 overflow-y-auto rounded-xl p-3 ${bare ? "flex-1" : "max-h-80"} ${
           dark ? "bg-black/20" : "bg-slate-50"
         }`}
@@ -95,22 +114,35 @@ export default function MessageThread({
           return (
             <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${
-                  isAdmin
-                    ? "bg-orange-500 text-white font-medium"
-                    : "bg-black text-white border border-zinc-800 font-medium"
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm shadow-xs ${
+                  mine
+                    ? "bg-amber-600 text-white rounded-br-xs"
+                    : dark
+                    ? "bg-slate-800/90 text-slate-100 border border-slate-700/80 rounded-bl-xs"
+                    : "bg-white text-slate-800 border border-slate-200 shadow-xs rounded-bl-xs"
                 }`}
               >
-                <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                <p className="mt-1 text-[10px] text-white/70 font-normal">
-                  {isAdmin ? "Admin / Operator" : m.senderName} ·{" "}
-                  {new Date(m.timestamp).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </p>
+                <p className="whitespace-pre-wrap break-words leading-relaxed">{m.text}</p>
+                <div
+                  className={`mt-1 flex items-center gap-1.5 text-[10px] ${
+                    mine ? "text-amber-200/80 justify-end" : "text-slate-400"
+                  }`}
+                >
+                  <span className="font-medium">
+                    {mine ? "You" : isAdmin ? "Admin / Operator" : m.senderName}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {new Date(m.timestamp).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
 
       <form onSubmit={send} className="mt-3 flex gap-2">
@@ -118,7 +150,7 @@ export default function MessageThread({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message…"
-          className={`flex-1 rounded-xl border px-3 py-2 text-sm outline-none ${
+          className={`flex-1 rounded-xl border px-3 py-2 text-xs sm:text-sm outline-none ${
             dark
               ? "border-amber-400/30 bg-white/5 text-white placeholder:text-slate-400 focus:border-amber-400/60"
               : "border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
@@ -127,7 +159,7 @@ export default function MessageThread({
         <button
           type="submit"
           disabled={sending || !text.trim()}
-          className="shrink-0 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white cursor-pointer disabled:opacity-60"
+          className="shrink-0 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white cursor-pointer disabled:opacity-60 hover:bg-amber-700 transition"
         >
           Send
         </button>
