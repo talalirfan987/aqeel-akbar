@@ -6,7 +6,7 @@ export interface Draw {
   drawDate: string; // ISO date
   ticketPrice: number;
   active: boolean;
-  timerEndMs?: number;
+  timerEndMs?: number | null;
 }
 
 export type PaymentMethod = "jazzcash" | "easypaisa";
@@ -36,7 +36,7 @@ export interface Ticket {
   drawDate: string;
   paymentMethod: PaymentMethod;
   paymentConfirmed: boolean;
-  ticketImage?: string; // data URL
+  ticketImage?: string; // Vercel Blob URL (older rows: legacy base64 data URL)
   ticketImageName?: string;
   status: TicketStatus;
   adminNotes?: string;
