@@ -75,6 +75,8 @@ export default function SubmitTicketPage() {
   const [submitError, setSubmitError] = useState("");
   const [fileError, setFileError] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewIsImage, setPreviewIsImage] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [paymentCheckMsg, setPaymentCheckMsg] = useState("");
 
@@ -85,7 +87,21 @@ export default function SubmitTicketPage() {
         const now = Date.now();
         const allActive = (d.draws || []).filter((x: Draw) => x.active);
         const openDraws = allActive.filter((x: Draw) => !x.timerEndMs || x.timerEndMs > now);
-        setDraws(openDraws.length > 0 ? openDraws : allActive);
+        const available = openDraws.length > 0 ? openDraws : allActive;
+        setDraws(available);
+        if (available.length > 0) {
+          setForm((f) => {
+            if (f.drawId && available.some((x: Draw) => x.id === f.drawId)) return f;
+            const first = available[0];
+            const qty = Number(f.quantity) || 1;
+            return {
+              ...f,
+              drawId: first.id,
+              amount: String(first.ticketPrice * qty),
+              drawDate: first.drawDate || f.drawDate,
+            };
+          });
+        }
       })
       .catch(() => setDraws([]));
   }, []);
@@ -100,7 +116,9 @@ export default function SubmitTicketPage() {
     }));
   }
   function addHolder() {
-    setForm((f) => ({ ...f, holders: [...f.holders, { name: "", phone: "" }] }));
+    setForm((f) =>
+      f.holders.length >= Number(f.quantity) ? f : { ...f, holders: [...f.holders, { name: "", phone: "" }] }
+    );
   }
   function removeHolder(index: number) {
     setForm((f) => ({ ...f, holders: f.holders.filter((_, i) => i !== index) }));
@@ -190,6 +208,11 @@ export default function SubmitTicketPage() {
       setFileError("File must be smaller than 5MB.");
       return;
     }
+
+    // Show an instant local preview while the file uploads in the background.
+    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewIsImage(file.type.startsWith("image/"));
+    update({ ticketImage: "", ticketImageName: file.name });
     setUploadingFile(true);
     try {
       let imageUrl = "";
@@ -200,6 +223,7 @@ export default function SubmitTicketPage() {
         });
         imageUrl = blob.url;
       } catch {
+        // Fallback to direct upload endpoint (for local dev or without Vercel Blob token)
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/api/upload", {
@@ -213,9 +237,17 @@ export default function SubmitTicketPage() {
       update({ ticketImage: imageUrl, ticketImageName: file.name });
     } catch {
       setFileError("Upload failed. Please try again.");
+      setPreviewUrl("");
     } finally {
       setUploadingFile(false);
     }
+  }
+
+  function removeFile() {
+    setPreviewUrl("");
+    setPreviewIsImage(false);
+    setFileError("");
+    update({ ticketImage: "", ticketImageName: "" });
   }
 
   async function handleSubmit() {
@@ -288,6 +320,7 @@ export default function SubmitTicketPage() {
                     update({
                       drawId: e.target.value,
                       amount: d ? String(d.ticketPrice * qty) : form.amount,
+                      ...(d?.drawDate ? { drawDate: d.drawDate } : {}),
                     });
                   }}
                 >
@@ -492,13 +525,15 @@ export default function SubmitTicketPage() {
                         </div>
                       </div>
                     ))}
-                    <button
-                      type="button"
-                      onClick={addHolder}
-                      className="w-full rounded-xl border-2 border-dashed border-slate-300 py-2 text-sm font-medium text-slate-600 hover:border-amber-400 hover:text-amber-700 cursor-pointer"
-                    >
-                      + Add another person
-                    </button>
+                    {form.holders.length < Number(form.quantity) && (
+                      <button
+                        type="button"
+                        onClick={addHolder}
+                        className="w-full rounded-xl border-2 border-dashed border-slate-300 py-2 text-sm font-medium text-slate-600 hover:border-amber-400 hover:text-amber-700 cursor-pointer"
+                      >
+                        + Add another person
+                      </button>
+                    )}
                   </div>
                 </Field>
               )}
@@ -526,30 +561,89 @@ export default function SubmitTicketPage() {
             <div className="space-y-5">
               <h2 className="text-lg font-semibold text-slate-900">{steps[3]}</h2>
               <Field label="Upload Ticket / Receipt Photo" error={errors.ticketImage || fileError} required>
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-amber-400">
-                  <span className="text-sm font-medium text-slate-700">Click to upload or drag &amp; drop</span>
-                  <span className="mt-1 text-xs text-slate-400">JPG, PNG or PDF · Max 5MB</span>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                    className="hidden"
-                    onChange={(e) => onFile(e.target.files?.[0] || null)}
-                  />
-                </label>
-              </Field>
-              {form.ticketImage && (
-                <div className="rounded-xl border border-slate-200 p-3">
-                  <p className="mb-2 text-xs font-medium text-slate-500">Preview: {form.ticketImageName}</p>
-                  {form.ticketImage.startsWith("data:image") ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={form.ticketImage} alt="Ticket preview" className="max-h-64 rounded-lg border border-slate-100 object-contain" />
-                  ) : (
-                    <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-                      PDF file selected
+                {!previewUrl ? (
+                  <label className="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 px-4 py-10 text-center transition hover:border-amber-400 hover:bg-amber-50/20">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 transition group-hover:scale-105">
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                     </div>
-                  )}
-                </div>
-              )}
+                    <span className="mt-3 text-sm font-semibold text-slate-700">Click to upload or drag &amp; drop</span>
+                    <span className="mt-1 text-xs text-slate-400">JPG, PNG or PDF · Max 5MB</span>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                      className="hidden"
+                      onChange={(e) => onFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative rounded-2xl border-2 border-amber-300/80 bg-slate-50/80 p-3 sm:p-4">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-slate-800">
+                          {form.ticketImageName}
+                        </p>
+                        <div className="mt-0.5 text-[11px]">
+                          {uploadingFile ? (
+                            <span className="inline-flex items-center gap-1.5 font-medium text-amber-600">
+                              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                              Uploading photo…
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                              </svg>
+                              Ready for submission
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-amber-700">
+                          Change
+                          <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                            className="hidden"
+                            onChange={(e) => onFile(e.target.files?.[0] || null)}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm transition hover:bg-red-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-center overflow-hidden rounded-xl bg-slate-900/5 p-2">
+                      {previewIsImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={previewUrl}
+                          alt="Ticket preview"
+                          className="max-h-72 w-auto max-w-full rounded-lg object-contain shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <svg className="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <p className="mt-2 text-sm font-semibold text-slate-800">{form.ticketImageName || "PDF Document"}</p>
+                          <p className="text-xs text-slate-400">PDF document selected</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Field>
             </div>
           )}
 
@@ -610,15 +704,15 @@ export default function SubmitTicketPage() {
             {step < steps.length - 1 ? (
               <button
                 onClick={next}
-                disabled={draws.length === 0}
+                disabled={draws.length === 0 || uploadingFile}
                 className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
-                Continue
+                {uploadingFile ? "Uploading…" : "Continue"}
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={submitting || draws.length === 0}
+                disabled={submitting || draws.length === 0 || uploadingFile}
                 className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {submitting ? "Submitting…" : "Submit Ticket"}
