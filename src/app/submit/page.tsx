@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { upload } from "@vercel/blob/client";
 import type { Draw, PaymentMethod } from "@/lib/types";
 import {
   CITY_ERROR,
@@ -73,13 +74,19 @@ export default function SubmitTicketPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [fileError, setFileError] = useState("");
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [paymentCheckMsg, setPaymentCheckMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/draws")
       .then((r) => r.json())
-      .then((d) => setDraws((d.draws || []).filter((x: Draw) => x.active)))
+      .then((d) => {
+        const now = Date.now();
+        const allActive = (d.draws || []).filter((x: Draw) => x.active);
+        const openDraws = allActive.filter((x: Draw) => !x.timerEndMs || x.timerEndMs > now);
+        setDraws(openDraws.length > 0 ? openDraws : allActive);
+      })
       .catch(() => setDraws([]));
   }, []);
 
@@ -171,7 +178,7 @@ export default function SubmitTicketPage() {
     setCheckingPayment(false);
   }
 
-  function onFile(file: File | null) {
+  async function onFile(file: File | null) {
     setFileError("");
     if (!file) return;
     const okTypes = ["image/jpeg", "image/png", "application/pdf"];
@@ -183,9 +190,32 @@ export default function SubmitTicketPage() {
       setFileError("File must be smaller than 5MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => update({ ticketImage: reader.result as string, ticketImageName: file.name });
-    reader.readAsDataURL(file);
+    setUploadingFile(true);
+    try {
+      let imageUrl = "";
+      try {
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        imageUrl = blob.url;
+      } catch {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", {
+          method: "PUT",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        imageUrl = data.url;
+      }
+      update({ ticketImage: imageUrl, ticketImageName: file.name });
+    } catch {
+      setFileError("Upload failed. Please try again.");
+    } finally {
+      setUploadingFile(false);
+    }
   }
 
   async function handleSubmit() {
