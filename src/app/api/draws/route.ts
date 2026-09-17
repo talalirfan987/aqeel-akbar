@@ -67,3 +67,26 @@ export async function PATCH(req: NextRequest) {
   await db.write();
   return NextResponse.json({ draw: updated });
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const idFromQuery = searchParams.get("id");
+  const body = req.headers.get("content-type")?.includes("json")
+    ? await req.json().catch(() => null)
+    : null;
+  const id = idFromQuery || body?.id;
+
+  if (!id) return NextResponse.json({ error: "Draw ID is required" }, { status: 400 });
+
+  const db = await getDb();
+  const index = db.data!.draws.findIndex((d) => d.id === id);
+  if (index === -1) return NextResponse.json({ error: "Draw not found" }, { status: 404 });
+
+  const [deleted] = db.data!.draws.splice(index, 1);
+  await db.write();
+
+  return NextResponse.json({ success: true, deleted });
+}
