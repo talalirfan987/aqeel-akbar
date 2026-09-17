@@ -1,19 +1,27 @@
 import { neon } from "@neondatabase/serverless";
 import { setDefaultResultOrder } from "dns";
+import dns from "dns";
+import { Agent, setGlobalDispatcher } from "undici";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import type { DbShape, Draw, Ticket, AdminUser, WinnerEntry } from "./types";
 
-// Some networks (and this app's dev sandbox) resolve Neon's hostname to an
-// IPv6 address that's unreachable and only fall back to IPv4 after a long
-// timeout, or not at all. Prefer IPv4 first so connections don't hang/fail.
+// Force IPv4 first so connections don't hang on unreachable IPv6 routes.
 setDefaultResultOrder("ipv4first");
+try {
+  setGlobalDispatcher(
+    new Agent({
+      connect: {
+        lookup: (hostname, opts, cb) => {
+          dns.lookup(hostname, { ...opts, family: 4 }, cb);
+        },
+      },
+    })
+  );
+} catch {
+  // Ignored if dispatcher already registered
+}
 
-// Data lives in Postgres (Neon) as a single JSONB row, keyed by ROW_ID. Vercel's
-// serverless filesystem is read-only, so the old lowdb-on-a-JSON-file approach
-// could never persist writes in production (it only ever worked in local dev).
-// Every route in the app still just does `const db = await getDb(); db.data!.x`
-// then `await db.write()` — only this file changed.
 const sql = neon(process.env.DATABASE_URL!);
 const ROW_ID = "main";
 
@@ -31,28 +39,57 @@ function ensureSchema() {
   return schemaReady;
 }
 
+// In-memory cache to eliminate remote database roundtrips on repeated reads
+let cachedData: DbShape | null = null;
+let cachedAt = 0;
+let inFlightRead: Promise<DbShape> | null = null;
+const CACHE_TTL_MS = 5000; // 5 seconds in-memory cache
+
 class PgStore {
   data: DbShape | null = null;
 
-  async read() {
-    await ensureSchema();
-    const rows = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
-    if (rows.length === 0) {
-      seed(this);
-      await sql`
-        INSERT INTO app_state (id, data) VALUES (${ROW_ID}, ${JSON.stringify(this.data)}::jsonb)
-        ON CONFLICT (id) DO NOTHING
-      `;
-      // Someone else may have seeded concurrently (e.g. two cold starts racing) —
-      // re-read so every instance converges on the same row.
-      const [row] = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
-      this.data = row.data as DbShape;
-    } else {
-      this.data = rows[0].data as DbShape;
+  async read(force = false) {
+    const now = Date.now();
+    if (!force && cachedData && now - cachedAt < CACHE_TTL_MS) {
+      this.data = cachedData;
+      return;
+    }
+
+    if (inFlightRead) {
+      this.data = await inFlightRead;
+      return;
+    }
+
+    inFlightRead = (async () => {
+      await ensureSchema();
+      const rows = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
+      let loaded: DbShape;
+      if (rows.length === 0) {
+        seed(this);
+        await sql`
+          INSERT INTO app_state (id, data) VALUES (${ROW_ID}, ${JSON.stringify(this.data)}::jsonb)
+          ON CONFLICT (id) DO NOTHING
+        `;
+        const [row] = await sql`SELECT data FROM app_state WHERE id = ${ROW_ID}`;
+        loaded = row.data as DbShape;
+      } else {
+        loaded = rows[0].data as DbShape;
+      }
+      cachedData = loaded;
+      cachedAt = Date.now();
+      return loaded;
+    })();
+
+    try {
+      this.data = await inFlightRead;
+    } finally {
+      inFlightRead = null;
     }
   }
 
   async write() {
+    cachedData = this.data;
+    cachedAt = Date.now();
     await sql`
       UPDATE app_state SET data = ${JSON.stringify(this.data)}::jsonb, updated_at = now()
       WHERE id = ${ROW_ID}
