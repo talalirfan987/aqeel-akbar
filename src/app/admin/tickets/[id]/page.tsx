@@ -514,6 +514,7 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
                   )}
                 </div>
               </div>
+
               {ticket.ticketImage && (
                 <div className="flex items-center gap-2">
                   <button
@@ -589,6 +590,11 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
               )}
             </div>
           </div>
+
+          {/* Card: Digital Receipt (Only when verified) */}
+          {ticket.status === "verified" && (
+            <DigitalReceipt ticket={ticket} />
+          )}
         </div>
 
         {/* RIGHT COLUMN: Status & Quick Actions, Winner, Notes, Chat (5 cols) */}
@@ -919,6 +925,103 @@ function ConfirmDialog({
             {busy ? "Processing…" : confirmLabel}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DigitalReceipt({ ticket }: { ticket: Ticket }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-amber-300/70 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/20 p-6 shadow-sm">
+      <div className="flex items-center justify-between border-b border-amber-200/80 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-xs">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold tracking-wide text-amber-950 uppercase">
+              Official Digital Lottery Certificate
+            </h3>
+            <p className="text-[11px] font-medium text-amber-700">Verified & Authenticated Record</p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-50 cursor-pointer"
+        >
+          <svg className="h-3.5 w-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Print Receipt
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 text-xs">
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Reference ID</span>
+          <span className="font-mono font-bold text-slate-900">{ticket.referenceId}</span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Customer Name</span>
+          <span className="font-semibold text-slate-900">{ticket.customerName}</span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Ticket Number</span>
+          <span className="font-mono font-bold text-amber-900 bg-amber-100/70 px-1.5 py-0.5 rounded">
+            {ticket.ticketNumber}
+          </span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Number of Tickets</span>
+          <span className="font-bold text-amber-950 bg-amber-100/80 px-2 py-0.5 rounded-md">
+            {ticket.quantity || 1} Ticket{(ticket.quantity || 1) > 1 ? "s" : ""}
+          </span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Total Amount</span>
+          <span className="font-bold text-slate-900">PKR {ticket.amount.toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Draw Name</span>
+          <span className="font-medium text-slate-900">{ticket.drawName}</span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Draw Date</span>
+          <span className="font-semibold text-slate-900">{ticket.drawDate}</span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Verified Date</span>
+          <span className="font-semibold text-slate-900">
+            {ticket.verifiedAt ? new Date(ticket.verifiedAt).toLocaleString() : "—"}
+          </span>
+        </div>
+        <div className="flex justify-between border-b border-amber-100 py-1.5">
+          <span className="text-slate-500">Authorized Operator</span>
+          <span className="font-bold text-emerald-700">{ticket.verifiedBy || "Administrator"}</span>
+        </div>
+      </div>
+
+      {ticket.holders && ticket.holders.length > 0 && (
+        <div className="mt-4 border-t border-amber-200/60 pt-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
+            Registered Ticket Holders ({ticket.holders.length})
+          </p>
+          <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+            {ticket.holders.map((h, i) => (
+              <div key={i} className="flex justify-between rounded-lg bg-amber-50/70 px-2.5 py-1 text-xs">
+                <span className="font-medium text-slate-800">{h.name}</span>
+                <span className="text-slate-500">{h.phone} ({h.quantity} ticket)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-5 rounded-xl border border-amber-200/50 bg-amber-100/30 p-3 text-center text-[10px] text-amber-800 leading-relaxed">
+        Digital record issued by Lucky Lottery Management System. This verification is authentic and recorded in the audit ledger.
       </div>
     </div>
   );
