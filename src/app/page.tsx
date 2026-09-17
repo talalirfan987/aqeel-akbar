@@ -39,8 +39,13 @@ export default function Home() {
     fetch("/api/draws")
       .then((r) => r.json())
       .then((d) => {
-        const found = (d.draws || []).find((x: Draw) => x.active);
-        setActiveDraw(found || d.draws?.[0] || null);
+        const now = Date.now();
+        const found =
+          (d.draws || []).find((x: Draw) => x.active && (!x.timerEndMs || x.timerEndMs > now)) ||
+          (d.draws || []).find((x: Draw) => x.active) ||
+          d.draws?.[0] ||
+          null;
+        setActiveDraw(found);
       })
       .catch(() => {});
   }, []);
