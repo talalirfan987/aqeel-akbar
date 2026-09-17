@@ -514,18 +514,74 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
                   )}
                 </div>
               </div>
+              {ticket.ticketImage && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLightboxOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-xs hover:bg-slate-50 cursor-pointer"
+                  >
+                    <svg className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    Full Preview
+                  </button>
+                  <a
+                    href={ticket.ticketImage}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-xs hover:bg-slate-50 cursor-pointer"
+                  >
+                    <svg className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Open
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="p-6">
               {ticket.ticketImage ? (
-                <div className="flex max-h-96 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-900/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={ticket.ticketImage}
-                    alt="Ticket receipt"
-                    className="max-h-96 w-auto max-w-full rounded-xl object-contain"
-                  />
-                </div>
+                isImageReceipt(ticket.ticketImage, ticket.ticketImageName) ? (
+                  <div
+                    onClick={() => setLightboxOpen(true)}
+                    className="group relative flex max-h-96 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-900/5 cursor-pointer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={ticket.ticketImage}
+                      alt="Ticket receipt"
+                      className="max-h-96 w-auto max-w-full rounded-xl object-contain transition group-hover:scale-101"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/20">
+                      <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100 flex items-center gap-1.5">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                        Click to Zoom
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center bg-slate-50/50">
+                    <div className="rounded-xl bg-red-100 p-3 text-red-600">
+                      <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="mt-3 text-sm font-bold text-slate-800">{ticket.ticketImageName || "PDF Document Attached"}</p>
+                    <p className="text-xs text-slate-400">PDF receipt uploaded by customer.</p>
+                    <a
+                      href={ticket.ticketImage}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-700"
+                    >
+                      Open PDF in New Window →
+                    </a>
+                  </div>
+                )
               ) : (
                 <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-400 text-sm">
                   No proof image attached to this ticket.
@@ -747,6 +803,40 @@ export default function TicketDetailsPage({ params }: { params: Promise<{ id: st
           <MessageThread ticketId={ticket.id} viewerRole="admin" />
         </div>
       </div>
+
+      {/* Full Size Image Lightbox Modal */}
+      {lightboxOpen && ticket.ticketImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute -top-10 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 cursor-pointer"
+            >
+              ✕
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ticket.ticketImage}
+              alt="Full size ticket receipt"
+              className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+            />
+            <div className="mt-2 text-center text-xs text-slate-300">
+              {ticket.ticketImageName || ticket.referenceId} ·{" "}
+              <a
+                href={ticket.ticketImage}
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-400 underline hover:text-amber-300"
+              >
+                Open in new tab
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Dialog Modal */}
       {confirmAction && (
