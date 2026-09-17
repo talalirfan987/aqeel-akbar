@@ -64,6 +64,24 @@ export default function DrawsPage() {
     }
   }
 
+  async function deleteDraw(id: string, name: string) {
+    if (!window.confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) return;
+    setUpdatingId(id);
+    try {
+      const res = await fetch(`/api/draws?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        load();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error || "Failed to delete draw");
+      }
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -127,7 +145,7 @@ export default function DrawsPage() {
               <th className="px-4 py-3">Hour</th>
               <th className="px-4 py-3">Minute</th>
               <th className="px-4 py-3">Countdown</th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -152,6 +170,7 @@ export default function DrawsPage() {
                   draw={d}
                   isBusy={updatingId === d.id}
                   onUpdate={(patch) => updateDraw(d.id, patch)}
+                  onDelete={deleteDraw}
                 />
               ))}
           </tbody>
@@ -165,22 +184,37 @@ function DrawRow({
   draw,
   isBusy,
   onUpdate,
+  onDelete,
 }: {
   draw: Draw;
   isBusy: boolean;
   onUpdate: (patch: Partial<Draw>) => void;
+  onDelete: (id: string, name: string) => void;
 }) {
   const [date, setDate] = useState(draw.drawDate);
-  const [days, setDays] = useState(0);
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(5); // Default 5 minutes
+  const [now, setNow] = useState(Date.now());
 
-  const hasTimer = typeof draw.timerEndMs === "number" && draw.timerEndMs > Date.now();
-  const remainingSecs = hasTimer ? Math.max(0, Math.floor((draw.timerEndMs! - Date.now()) / 1000)) : 0;
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const hasTimer = typeof draw.timerEndMs === "number" && draw.timerEndMs > now;
+  const remainingSecs = hasTimer ? Math.max(0, Math.floor((draw.timerEndMs! - now) / 1000)) : 0;
   const remDays = Math.floor(remainingSecs / (3600 * 24));
   const remHours = Math.floor((remainingSecs % (3600 * 24)) / 3600);
   const remMins = Math.floor((remainingSecs % 3600) / 60);
   const remSecs = remainingSecs % 60;
+
+  const [days, setDays] = useState(hasTimer ? remDays : 3);
+  const [hours, setHours] = useState(hasTimer ? remHours : 0);
+  const [minutes, setMinutes] = useState(hasTimer ? remMins : 0);
+
+  function applyPreset(d: number, h: number, m: number) {
+    setDays(d);
+    setHours(h);
+    setMinutes(m);
+  }
 
   function handleSetTimer() {
     const totalSecs = days * 86400 + hours * 3600 + minutes * 60;
@@ -224,13 +258,23 @@ function DrawRow({
         </button>
       </td>
       <td className="px-4 py-3">
-        <input
-          type="number"
-          min={0}
-          value={days}
-          onChange={(e) => setDays(Math.max(0, Number(e.target.value) || 0))}
-          className="w-16 text-center rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-        />
+        <div className="flex flex-col items-center">
+          <input
+            type="number"
+            min={0}
+            value={days}
+            onChange={(e) => setDays(Math.max(0, Number(e.target.value) || 0))}
+            className="w-16 text-center rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+          />
+          <button
+            type="button"
+            onClick={() => applyPreset(3, 0, 0)}
+            className="mt-1 text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded px-1.5 py-0.5 border border-amber-200 cursor-pointer"
+            title="Set to 3 Days"
+          >
+            3 Days
+          </button>
+        </div>
       </td>
       <td className="px-4 py-3">
         <input
@@ -254,21 +298,40 @@ function DrawRow({
       </td>
       <td className="px-4 py-3">
         {hasTimer ? (
-          <span className="inline-block whitespace-nowrap rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-300">
-            {remDays}d {remHours}h {remMins}m {remSecs}s
-          </span>
+          <div className="flex flex-col items-start gap-1">
+            <span className="inline-block whitespace-nowrap rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold font-mono tabular-nums text-emerald-700 border border-emerald-300">
+              {remDays}d {remHours}h {remMins}m {remSecs}s
+            </span>
+            <button
+              type="button"
+              onClick={() => onUpdate({ timerEndMs: null })}
+              className="text-[10px] text-red-500 hover:underline cursor-pointer"
+            >
+              Clear Timer
+            </button>
+          </div>
         ) : (
           <span className="text-xs font-medium text-slate-400">No timer</span>
         )}
       </td>
       <td className="px-4 py-3">
-        <button
-          disabled={isBusy}
-          onClick={handleSetTimer}
-          className="whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-950 shadow-md hover:scale-[1.02] transition active:scale-95 cursor-pointer disabled:opacity-50"
-        >
-          {isBusy ? "Saving…" : "Save Timer"}
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            disabled={isBusy}
+            onClick={handleSetTimer}
+            className="whitespace-nowrap rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-950 shadow-md hover:scale-[1.02] transition active:scale-95 cursor-pointer disabled:opacity-50"
+          >
+            {isBusy ? "Saving…" : "Save Timer"}
+          </button>
+          <button
+            disabled={isBusy}
+            onClick={() => onDelete(draw.id, draw.name)}
+            className="whitespace-nowrap rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-2 text-xs font-bold uppercase tracking-wider text-red-700 shadow-sm hover:scale-[1.02] transition active:scale-95 cursor-pointer disabled:opacity-50"
+            title="Delete this draw"
+          >
+            Delete
+          </button>
+        </div>
       </td>
     </tr>
   );
