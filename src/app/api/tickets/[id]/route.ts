@@ -4,11 +4,12 @@ import { getDb } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
 const patchSchema = z.object({
-  action: z.enum(["verify", "reject", "cancel", "edit", "mark_duplicate", "unmark_duplicate", "mark_winner", "unmark_winner"]),
+  action: z.enum(["verify", "reject", "cancel", "pending", "edit", "save_notes", "mark_duplicate", "unmark_duplicate", "mark_winner", "unmark_winner"]),
   adminNotes: z.string().max(1000).optional(),
   customerName: z.string().min(3).max(100).optional(),
   phone: z.string().regex(/^03\d{9}$/).optional(),
   ticketNumber: z.string().min(2).max(30).optional(),
+  quantity: z.coerce.number().positive().optional(),
   amount: z.coerce.number().positive().optional(),
   prize: z.string().max(200).optional(),
 });
@@ -41,8 +42,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const prevStatus = ticket.status;
 
-  if (ticket.status === "verified" && ["edit", "verify", "reject"].includes(input.action)) {
-    return NextResponse.json({ error: "Verified tickets cannot be modified." }, { status: 409 });
+  if (["verify", "reject", "cancel", "pending"].includes(input.action) && ticket.status === (input.action === "verify" ? "verified" : input.action === "reject" ? "rejected" : input.action === "cancel" ? "cancelled" : "pending")) {
+    return NextResponse.json({ error: `Ticket is already ${ticket.status}.` }, { status: 400 });
   }
 
   const log = (action: string, details?: string) => {
@@ -105,8 +106,10 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     }
     case "reject": {
       ticket.status = "rejected";
-      ticket.verifiedAt = new Date().toISOString();
-      ticket.verifiedBy = session.username;
+      ticket.verifiedAt = undefined;
+      ticket.verifiedBy = undefined;
+      ticket.isWinner = false;
+      ticket.prize = undefined;
       ticket.adminNotes = input.adminNotes || ticket.adminNotes;
       log(`Admin rejected ticket ${ticket.referenceId}`, input.adminNotes);
       notify("rejected", "Your ticket requires attention. Please contact the authorized operator.");
@@ -119,6 +122,10 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     }
     case "cancel": {
       ticket.status = "cancelled";
+      ticket.verifiedAt = undefined;
+      ticket.verifiedBy = undefined;
+      ticket.isWinner = false;
+      ticket.prize = undefined;
       ticket.adminNotes = input.adminNotes || ticket.adminNotes;
       log(`Admin cancelled ticket ${ticket.referenceId}`, input.adminNotes);
       notify("cancelled", "Your ticket has been cancelled by the operator. Please contact support for details.");
@@ -127,6 +134,21 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
           ? `Your ticket has been cancelled: ${input.adminNotes}`
           : "Your ticket has been cancelled. Please contact us if you have questions."
       );
+      break;
+    }
+    case "pending": {
+      ticket.status = "pending";
+      ticket.verifiedAt = undefined;
+      ticket.verifiedBy = undefined;
+      ticket.isWinner = false;
+      ticket.prize = undefined;
+      ticket.adminNotes = input.adminNotes || ticket.adminNotes;
+      log(`Admin reset ticket ${ticket.referenceId} to pending`, input.adminNotes);
+      break;
+    }
+    case "save_notes": {
+      ticket.adminNotes = input.adminNotes ?? "";
+      log(`Admin updated notes on ticket ${ticket.referenceId}`, input.adminNotes);
       break;
     }
     case "mark_duplicate": {
@@ -166,6 +188,10 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       if (input.ticketNumber && input.ticketNumber !== ticket.ticketNumber) {
         changed.push(`ticket#: ${ticket.ticketNumber} → ${input.ticketNumber}`);
         ticket.ticketNumber = input.ticketNumber;
+      }
+      if (input.quantity && input.quantity !== ticket.quantity) {
+        changed.push(`qty: ${ticket.quantity} → ${input.quantity}`);
+        ticket.quantity = input.quantity;
       }
       if (input.amount && input.amount !== ticket.amount) {
         changed.push(`amount: ${ticket.amount} → ${input.amount}`);
